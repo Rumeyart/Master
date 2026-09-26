@@ -1,0 +1,43 @@
+// Ícones de linha fina no estilo da marca (losangos, nós e fios). Usam a cor do texto.
+const s = (corpo) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${corpo}</svg>`;
+
+export const ICONES = {
+  painel: s('<rect x="3" y="3" width="7.5" height="9" rx="2.2"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="2.2"/><rect x="13.5" y="11.5" width="7.5" height="9.5" rx="2.2"/><rect x="3" y="15" width="7.5" height="6" rx="2.2"/><circle cx="6.75" cy="7.5" r="1" fill="currentColor" stroke="none"/>'),
+  pedidos: s('<path d="M3.5 13.5 6 5.5A2 2 0 0 1 7.9 4h8.2A2 2 0 0 1 18 5.5l2.5 8"/><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5h-5a3.5 3.5 0 0 1-7 0z"/><path d="M12 7.2l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z" fill="currentColor" stroke="none"/>'),
+  funil: s('<path d="M3.5 4.5h17l-6.5 8v6l-4 2v-8z"/><path d="M7 8.5h10"/><circle cx="12" cy="8.5" r="1" fill="currentColor" stroke="none"/>'),
+  clientes: s('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M15.5 4.8a3.3 3.3 0 0 1 0 6.4"/><path d="M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/>'),
+  propostas: s('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8.5 12.5h7M8.5 16h4.5"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/>'),
+  contratos: s('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8 17c1.2-1.6 2-1.6 2.6-.4.5 1 1.1 1 1.9-.1.7-1 1.4-1 2 .2.4.7 1 .8 1.5.3"/><path d="M8.5 11.5h7"/>'),
+  tarefas: s('<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8 12.3l2.7 2.7L16.2 9.3"/>'),
+  financeiro: s('<path d="M3.5 19.5h17"/><path d="M5 16l4-4.5 3 2.5 6.5-7.5"/><path d="M15 6.5h3.5V10"/><circle cx="9" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/>'),
+  compras: s('<path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/><path d="M9.5 13.5l1.8 1.8 3.4-3.6"/>'),
+  servicos: s('<path d="M12 2.8 19.5 12 12 21.2 4.5 12z"/><path d="M12 7.5 15.7 12 12 16.5 8.3 12z"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>'),
+  config: s('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/><path d="M4 12h5M13 12h7"/><circle cx="11" cy="12" r="2.2"/>'),
+  mais: s('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+  busca: s('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>'),
+  sair: s('<path d="M14 4h3.5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H14"/><path d="M10 16.5 5.5 12 10 7.5M5.5 12H15"/>'),
+  mais_novo: s('<path d="M12 5v14M5 12h14"/>'),
+  sino: s('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>'),
+  ok: s('<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/>'),
+  whats: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>',
+  receita: s('<path d="M12 19V5M6 11l6-6 6 6"/>'),
+  despesa: s('<path d="M12 5v14M6 13l6 6 6-6"/>'),
+  transferencia: s('<path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/>'),
+  pagamento_fatura: s('<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/>'),
+  cartao: s('<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/>'),
+  conta: s('<path d="M4 9.5 12 4l8 5.5"/><path d="M5.5 10v8M10 10v8M14 10v8M18.5 10v8M3.5 20h17"/>'),
+  importar: s('<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 15.5v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2.5"/>'),
+  categorias: s('<circle cx="7" cy="7" r="3.5"/><circle cx="17" cy="7" r="3.5"/><circle cx="7" cy="17" r="3.5"/><path d="M13.5 17h7M17 13.5v7"/>'),
+  visao: s('<path d="M3.5 12a8.5 8.5 0 1 0 8.5-8.5V12z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/>'),
+  fornecedor: s('<path d="M3.5 20V9l8.5-5 8.5 5v11"/><path d="M9 20v-6h6v6"/>'),
+  recurso: s('<path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>'),
+  nota: s('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
+  oportunidade: s('<path d="M12 2.8 19.5 12 12 21.2 4.5 12z"/><path d="M9 12h6M12 9v6"/>'),
+  lixo: s('<path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/>'),
+  editar: s('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/>'),
+  pdf: s('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6M9.5 14.5 12 17l2.5-2.5"/>'),
+  copiar: s('<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/>'),
+  seta: s('<path d="M5 12h14M13 6l6 6-6 6"/>')
+};
+
+export const icone = (k, cls = 'ic') => `<span class="${cls}">${ICONES[k] || ''}</span>`;
