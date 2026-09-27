@@ -78,9 +78,9 @@ export async function render(el, {aba}){
     q.lista(T.modelos, '*', x => x.order('nome'))
   ]);
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Comercial</div><h1>Contratos</h1>
+    <div class="cab"><h1>Contratos</h1>
       <div class="dir">${ativa === 'modelos' ? `<button class="btn prim" id="novoMod"><span class="ic">${ICONES.mais_novo}</span>Modelo</button>` : `<button class="btn prim" id="novo"><span class="ic">${ICONES.mais_novo}</span>Contrato</button>`}</div>
-      <div class="sub">Modelos com variáveis que se preenchem sozinhas a partir do cliente e da proposta, com PDF na identidade da Rumëyart.</div></div>
+</div>
     <nav class="abas"><a href="#/contratos" class="${ativa === 'contratos' ? 'on' : ''}"><span class="ic">${ICONES.contratos}</span>Contratos · ${ks.length}</a><a href="#/contratos?aba=modelos" class="${ativa === 'modelos' ? 'on' : ''}"><span class="ic">${ICONES.editar}</span>Modelos · ${modelos.length}</a></nav>
     ${ativa === 'contratos' ? `<div class="card" style="padding-top:6px;">${ks.length ? `<table class="tabela"><thead><tr><th>Nº</th><th>Cliente e projeto</th><th>Situação</th><th>Criado</th></tr></thead><tbody>
       ${ks.map(k => `<tr class="link" data-id="${k.id}"><td data-l="Nº"><b style="font-family:var(--f-mono);color:#1E7A7A;">${k.numero}</b></td>

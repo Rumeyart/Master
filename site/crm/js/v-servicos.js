@@ -6,18 +6,19 @@ import {recarregar} from './app.js';
 
 const ICO = {app: 'oportunidade', sistema: 'painel', site: 'visao', jogo: 'funil', documento: 'propostas', manutencao: 'config', hospedagem: 'conta', consultoria: 'nota', outro: 'mais'};
 
+let TODAS_CATS = [];
 export async function render(el){
   const ss = await servicos(true);
+  TODAS_CATS = ss.map(s => s.categoria);
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Operação</div><h1>Serviços</h1>
+    <div class="cab"><h1>Serviços</h1>
       <div class="dir"><button class="btn prim" id="novo"><span class="ic">${ICONES.mais_novo}</span>Serviço</button></div>
-      <div class="sub">O que a Rumëyart oferece. Cada serviço já traz descrição, entregas, prazo e preço para montar a proposta em segundos.</div></div>
+</div>
     <div class="serv-grade">${ss.map(s => `<div class="serv ${s.ativo ? '' : 'inativo'}">
       <div style="display:flex;align-items:center;gap:.6rem;"><span class="ic">${ICONES[ICO[s.categoria]] || ICONES.servicos}</span><span class="pill">${rot(CATEGORIAS, s.categoria)}</span>${s.ativo ? '' : '<span class="tag expirada">inativo</span>'}
         <button class="btn fantasma peq" data-id="${s.id}" style="margin-left:auto;">Editar</button></div>
       <h3>${esc(s.nome)}</h3>
       ${s.subtitulo ? `<div class="muted" style="font-size:13.5px;">${esc(s.subtitulo)}</div>` : ''}
-      ${(s.entregaveis || []).length ? `<ul>${s.entregaveis.map(e => `<li>${esc(e)}</li>`).join('')}</ul>` : ''}
       <div class="preco">${Number(s.preco_base) ? `<div><div class="eyebrow">a partir de</div><b>${brl(s.preco_base)}</b></div>` : ''}${Number(s.mensal) ? `<div><div class="eyebrow">mensal</div><b>${brl(s.mensal)}</b></div>` : ''}${s.prazo ? `<div style="margin-left:auto;text-align:right;"><div class="eyebrow">prazo</div><span style="font-size:13px;">${esc(s.prazo)}</span></div>` : ''}</div>
     </div>`).join('') || '<div class="vazio">Nenhum serviço cadastrado.</div>'}</div>`;
   el.querySelector('#novo').onclick = async () => { if(await editar()){ limparCache('servicos'); aviso('Serviço criado.'); recarregar(); } };
@@ -28,7 +29,7 @@ function editar(s){
   const x = s || {categoria: 'app', ativo: true, entregaveis: [], ordem: 100};
   return janela({titulo: s ? 'Editar serviço' : 'Novo serviço', larga: true, corpo: `
     <div class="grade2"><div class="campo"><label class="rot" for="s_nome">Nome *</label><input type="text" id="s_nome" value="${esc(x.nome)}"></div>
-      <div class="campo"><label class="rot" for="s_cat">Categoria</label><select id="s_cat">${opcoes(CATEGORIAS, x.categoria)}</select></div></div>
+      <div class="campo"><label class="rot" for="s_cat">Categoria</label><select id="s_cat" data-add="texto">${opcoes(CATEGORIAS, x.categoria, [...new Set(TODAS_CATS)])}</select></div></div>
     <div class="campo"><label class="rot" for="s_sub">Frase curta</label><input type="text" id="s_sub" value="${esc(x.subtitulo)}"></div>
     <div class="campo"><label class="rot" for="s_desc">Descrição (vai em "O que vamos construir")</label><textarea id="s_desc">${esc(x.descricao)}</textarea></div>
     <div class="campo"><label class="rot" for="s_ent">Entregas</label><textarea id="s_ent">${esc((x.entregaveis || []).join('\n'))}</textarea></div>

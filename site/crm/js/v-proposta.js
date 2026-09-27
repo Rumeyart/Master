@@ -34,7 +34,7 @@ export async function render(el, {id}){
     ${travada ? `<div class="travada">Esta proposta está <b>${statusNome(p.status).toLowerCase()}</b> e não pode mais ser alterada. Para mudar valores, use <b>⋯ → Duplicar</b> e gere uma nova versão.</div>` : ''}
     <div class="ed-cols">
       <div id="form">
-        <div class="card"><h3>Projeto</h3>
+        <details class="card sec" open><summary>Projeto</summary><div class="sec-c">
           <div class="campo"><label class="rot" for="f_tit">Título na capa</label><input type="text" id="f_tit" value="${esc(d.titulo)}" maxlength="90"></div>
           <div class="campo"><label class="rot" for="f_sub">Frase de apoio</label><input type="text" id="f_sub" value="${esc(d.subtitulo)}" maxlength="120" placeholder="Ex.: Aplicativo instalável no celular e no computador"></div>
           <div class="campo"><label class="rot" for="f_obj">O que vamos construir</label><textarea id="f_obj" placeholder="Explique em 2 ou 3 frases o que a solução faz pelo cliente.">${esc(d.objetivo)}</textarea></div>
@@ -42,15 +42,15 @@ export async function render(el, {id}){
           ${ativos.length ? `<details style="margin-top:.8rem;"><summary style="cursor:pointer;color:var(--azul);font-size:13.5px;">Trocar o serviço base</summary>
             <div class="campo"><select id="f_serv"><option value="">— escolha —</option>${ativos.map(s => `<option value="${s.id}" ${s.id === d.servico?.id ? 'selected' : ''}>${esc(s.nome)}</option>`).join('')}</select>
             <div class="muted" style="font-size:12.5px;">Substitui título, texto, entregas e valores pelos do serviço escolhido.</div></div></details>` : ''}
-        </div>
-        ${ped || d.contexto ? `<div class="card"><h3>O que o cliente contou</h3>
+        </div></details>
+        ${ped || d.contexto ? `<details class="card sec"><summary>O que o cliente contou</summary><div class="sec-c">
           ${ped ? `<details><summary style="cursor:pointer;color:var(--azul);font-size:13.5px;">Ver respostas do site (pedido nº ${ped.numero})</summary><div class="briefing" style="margin:.6rem 0;"><div class="bq ideia"><div class="k">A ideia</div><div class="v">${esc(ped.ideia)}</div></div>${CAMPOS_BRIEFING.filter(([k]) => (ped.respostas || {})[k]).map(([k, t]) => `<div class="bq"><div class="k">${t}</div><div class="v">${esc(ped.respostas[k])}</div></div>`).join('')}</div></details>` : ''}
           <div class="campo"><label class="rot" for="f_ctx">Texto que vai na proposta</label><textarea id="f_ctx">${esc(d.contexto)}</textarea></div>
-          <label class="chk"><input type="checkbox" id="f_mctx" ${d.mostrar_contexto ? 'checked' : ''}> Mostrar "O que você nos contou" na proposta</label></div>` : ''}
-        <div class="card"><h3>Como vamos trabalhar</h3>
+          <label class="chk"><input type="checkbox" id="f_mctx" ${d.mostrar_contexto ? 'checked' : ''}> Mostrar "O que você nos contou" na proposta</label></div></details>` : ''}
+        <details class="card sec"><summary>Como vamos trabalhar</summary><div class="sec-c">
           <div class="muted" style="font-size:12.5px;margin:-.3rem 0 .6rem;">Uma etapa por linha, no formato <b>Nome: descrição</b>. Até 5 aparecem na proposta.</div>
-          <textarea id="f_etp">${esc(d.etapas)}</textarea></div>
-        <div class="card"><h3>Investimento</h3>
+          <textarea id="f_etp">${esc(d.etapas)}</textarea></div></details>
+        <details class="card sec" open><summary>Investimento</summary><div class="sec-c">
           <div class="itens-ed"><div class="li-it muted" style="font-size:11.5px;"><span>Item</span><span>Qtd</span><span>Valor (R$)</span><span></span></div><div id="f_itens"></div></div>
           <button type="button" class="btn linha peq" id="addIt" style="margin-top:.4rem;">＋ Adicionar item</button>
           <datalist id="itSug">${ativos.map(s => `<option value="${esc(s.nome)}">`).join('')}<option value="Protótipo navegável"><option value="Integração com pagamento"><option value="Módulo extra"><option value="Treinamento da equipe"><option value="Migração de dados"></datalist>
@@ -59,18 +59,18 @@ export async function render(el, {id}){
           <div class="grade2"><div class="campo"><label class="rot" for="f_men">Plano mensal (R$)</label><input type="number" id="f_men" min="0" step="10" value="${d.mensal || ''}" placeholder="0 = sem mensalidade"></div>
             <div class="campo"><label class="rot" for="f_mdesc">Nome do plano</label><input type="text" id="f_mdesc" value="${esc(d.mensal_desc)}"></div></div>
           <div class="totais" id="totais" style="margin-top:.8rem;"></div>
-        </div>
-        <div class="card"><h3>Condições</h3>
+        </div></details>
+        <details class="card sec"><summary>Condições <span class="resumo">pagamento, prazo, validade, incluso</span></summary><div class="sec-c">
           <div class="campo"><label class="rot" for="f_pag">Pagamento</label><textarea id="f_pag">${esc(d.pagamento)}</textarea></div>
           <div class="grade2"><div class="campo"><label class="rot" for="f_prazo">Prazo</label><input type="text" id="f_prazo" value="${esc(d.prazo)}"></div>
             <div class="campo"><label class="rot" for="f_valid">Validade (dias)</label><input type="number" id="f_valid" min="1" max="90" value="${d.validade_dias || 15}"></div></div>
           <div class="campo"><label class="rot" for="f_inc">Está incluso</label><textarea id="f_inc">${esc(d.incluso)}</textarea></div>
           <div class="campo"><label class="rot" for="f_nao">Não está incluso</label><textarea id="f_nao">${esc(d.nao_incluso)}</textarea></div>
-        </div>
-        <div class="card"><h3>Observações</h3>
+        </div></details>
+        <details class="card sec"><summary>Observações</summary><div class="sec-c">
           <div class="campo"><label class="rot" for="f_obs">Observações da proposta</label><textarea id="f_obs" placeholder="Ex.: a integração com o Instagram fica para a versão 2.">${esc(d.obs)}</textarea></div>
           <div class="campo"><label class="rot" for="f_cond">Letras miúdas</label><textarea id="f_cond">${esc(d.condicoes)}</textarea></div>
-        </div>
+        </div></details>
       </div>
       <div class="previa-col">
         <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap;"><span class="salvo" id="salvo"></span><span class="muted" style="font-size:12px;" id="arq"></span></div>

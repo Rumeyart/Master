@@ -7,13 +7,12 @@ import {dadosPadrao, calc} from './proposta-doc.js';
 // ---------- seletor de cliente com busca ----------
 export async function htmlSeletorCliente(id = 'f_cli', selecionado, {opcional = false} = {}){
   const cs = await listarClientes(false);
-  return {cs, html: `<div class="campo"><label class="rot" for="${id}_q">Cliente${opcional ? ' <small>(opcional)</small>' : ''}</label>
-    <input type="search" id="${id}_q" placeholder="Digite para filtrar…" style="margin-bottom:.4rem;">
-    <select id="${id}"><option value="">${opcional ? '— sem cliente —' : '— escolha o cliente —'}</option>${cs.map(c => `<option value="${c.id}" ${c.id === selecionado ? 'selected' : ''}>${esc(c.nome)}${c.marca ? ' · ' + esc(c.marca) : ''}</option>`).join('')}<option value="__novo">＋ Cadastrar novo cliente…</option></select></div>`};
+  return {cs, html: `<div class="campo"><label class="rot" for="${id}">Cliente${opcional ? ' <small>(opcional)</small>' : ''}</label>
+    <select id="${id}" data-add="cliente"><option value="">${opcional ? '— sem cliente —' : '— escolha o cliente —'}</option>${cs.map(c => `<option value="${c.id}" ${c.id === selecionado ? 'selected' : ''}>${esc(c.nome)}${c.marca ? ' · ' + esc(c.marca) : ''}</option>`).join('')}<option value="__novo">＋ Cadastrar novo cliente…</option></select></div>`};
 }
 export function ligarSeletorCliente(el, id, cs, aoMudar){
   const sel = el.querySelector('#' + id), busca = el.querySelector('#' + id + '_q');
-  busca.addEventListener('input', () => {
+  if(busca) busca.addEventListener('input', () => {
     const t = busca.value.trim().toLowerCase();
     [...sel.options].forEach(o => { if(!o.value || o.value === '__novo') return; const c = cs.find(x => x.id === o.value); o.hidden = t && !(`${c.nome} ${c.marca || ''} ${c.whatsapp || ''}`.toLowerCase().includes(t)); });
     const vis = [...sel.options].filter(o => o.value && o.value !== '__novo' && !o.hidden);
@@ -42,8 +41,10 @@ export function escolherNovo(){
 }
 
 // ---------- cliente ----------
-export async function cliente(existente){
-  const c = existente || {tipo: 'pessoal', origem: 'whatsapp'};
+const usados = async (tabela, col) => { try{ return [...new Set((await q.lista(tabela, col, x => x.order('criado_em', {ascending: false}).limit(400))).map(r => r[col]).filter(Boolean))]; }catch(e){ return []; } };
+export async function cliente(existente, pre = {}){
+  const [tiposUs, origensUs] = await Promise.all([usados(T.clientes, 'tipo'), usados(T.clientes, 'origem')]);
+  const c = existente || {tipo: 'pessoal', origem: 'whatsapp', ...pre};
   const corpo = `
     <div class="campo"><label class="rot" for="c_nome">Nome *</label><input type="text" id="c_nome" value="${esc(c.nome)}" maxlength="160"></div>
     <div class="grade2">
@@ -51,8 +52,8 @@ export async function cliente(existente){
       <div class="campo"><label class="rot" for="c_email">E-mail</label><input type="email" id="c_email" value="${esc(c.email)}"></div>
     </div>
     <div class="grade2">
-      <div class="campo"><label class="rot" for="c_tipo">Para quem é</label><select id="c_tipo">${opcoes(TIPOS, c.tipo)}</select></div>
-      <div class="campo"><label class="rot" for="c_origem">Como chegou</label><select id="c_origem">${opcoes(ORIGENS, c.origem)}</select></div>
+      <div class="campo"><label class="rot" for="c_tipo">Para quem é</label><select id="c_tipo" data-add="texto">${opcoes(TIPOS, c.tipo, tiposUs)}</select></div>
+      <div class="campo"><label class="rot" for="c_origem">Como chegou</label><select id="c_origem" data-add="texto">${opcoes(ORIGENS, c.origem, origensUs)}</select></div>
     </div>
     <div class="campo"><label class="rot" for="c_marca">Marca / empresa <small>(se houver)</small></label><input type="text" id="c_marca" value="${esc(c.marca)}"></div>
     <div class="grade3">
@@ -82,7 +83,7 @@ export async function oportunidade({cliente_id, existente}){
   const o = existente || {etapa: 'novo', valor: 0, mensal: 0};
   const seletor = cliente_id || existente ? null : await htmlSeletorCliente('o_cli');
   const corpo = `${seletor ? seletor.html : ''}
-    <div class="campo"><label class="rot" for="o_serv">Serviço</label><select id="o_serv"><option value="">— personalizado —</option>${ss.map(s => `<option value="${s.id}" ${s.id === o.servico_id ? 'selected' : ''}>${esc(s.nome)}${s.preco_base ? ' · a partir de ' + brl(s.preco_base) : ''}${s.mensal ? ' · ' + brl(s.mensal) + '/mês' : ''}</option>`).join('')}</select></div>
+    <div class="campo"><label class="rot" for="o_serv">Serviço</label><select id="o_serv" data-add="servico"><option value="">— personalizado —</option>${ss.map(s => `<option value="${s.id}" ${s.id === o.servico_id ? 'selected' : ''}>${esc(s.nome)}${s.preco_base ? ' · a partir de ' + brl(s.preco_base) : ''}${s.mensal ? ' · ' + brl(s.mensal) + '/mês' : ''}</option>`).join('')}</select></div>
     <div class="campo"><label class="rot" for="o_tit">Nome do projeto *</label><input type="text" id="o_tit" value="${esc(o.titulo)}" placeholder="Ex: App de agendamento da escola de capoeira"></div>
     <div class="grade3">
       <div class="campo"><label class="rot" for="o_valor">Valor do projeto (R$)</label><input type="number" id="o_valor" min="0" step="50" value="${o.valor || ''}"></div>
@@ -124,6 +125,7 @@ function acoesDatalist(){ return `<datalist id="acoesSug"><option value="Respond
 
 // ---------- tarefa (com ou sem cliente) ----------
 export async function tarefa({cliente_id, oportunidade_id, existente, area}){
+  const areasUs = await usados(T.tarefas, 'area');
   const t = existente || {area: area || 'comercial'};
   const seletor = cliente_id || existente ? null : await htmlSeletorCliente('t_cli', null, {opcional: true});
   const cid0 = cliente_id || existente?.cliente_id;
@@ -131,7 +133,7 @@ export async function tarefa({cliente_id, oportunidade_id, existente, area}){
     <div class="campo"><label class="rot" for="t_op">Projeto <small>(opcional)</small></label><select id="t_op"><option value="">—</option></select></div>
     <div class="campo"><label class="rot" for="t_tit">O que fazer *</label><input type="text" id="t_tit" list="acoesSug" value="${esc(t.titulo)}" placeholder="Ex: Enviar protótipo"></div>
     <div class="grade2">
-      <div class="campo"><label class="rot" for="t_area">Área</label><select id="t_area">${opcoes(AREAS, t.area)}</select></div>
+      <div class="campo"><label class="rot" for="t_area">Área</label><select id="t_area" data-add="texto">${opcoes(AREAS, t.area, areasUs)}</select></div>
       <div class="campo"><label class="rot" for="t_quando">Quando *</label><input type="datetime-local" id="t_quando" value="${paraInputDataHora(t.vence_em || proximoHorario())}"></div>
     </div>
     <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem;">${[['Hoje 17h', 0, 17], ['Amanhã 10h', 1, 10], ['Em 3 dias', 3, 10], ['Em 1 semana', 7, 10]].map(([n, d, h]) => `<button type="button" class="btn fantasma peq" data-atalho="${d},${h}">${n}</button>`).join('')}</div>

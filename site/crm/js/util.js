@@ -59,10 +59,10 @@ export const ORIGENS = [['site','Site'],['instagram','Instagram'],['whatsapp','W
 export const CATEGORIAS = [['app','App'],['sistema','Sistema / CRM'],['site','Site ou catálogo'],['jogo','Jogo'],['documento','Documento interativo'],['manutencao','Manutenção'],['hospedagem','Hospedagem'],['consultoria','Consultoria'],['outro','Outro']];
 export const AREAS = [['comercial','Comercial'],['desenvolvimento','Desenvolvimento'],['administrativo','Administrativo'],['financeiro','Financeiro']];
 export const rot = (lista, v) => (lista.find(x => x[0] === v) || [v, v || '—'])[1];
-export const opcoes = (lista, sel) => lista.map(([v, n]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${esc(n)}</option>`).join('');
+export const opcoes = (lista, sel, extras = []) => { const L = [...lista]; [...extras, sel].forEach(v => { if(v && !L.some(x => x[0] === v)) L.push([v, v]); }); return L.map(([v, n]) => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(n)}</option>`).join(''); };
 
 // ---- dinheiro em centavos (financeiro) ----
-export const centavos = v => Math.round(num(v) * 100);
+export const centavos = v => Math.round((typeof v === 'number' ? v : num(v)) * 100);
 export const deCentavos = c => (Number(c) || 0) / 100;
 export const brlC = c => brl(deCentavos(c));
 export const inputValor = c => c ? (deCentavos(c)).toFixed(2).replace('.', ',') : '';
@@ -100,6 +100,8 @@ export function aviso(msg, acaoHtml, tempo){
 export const fecharAviso = () => $('#aviso').classList.remove('on');
 
 // ---- janela (modal) ----
+let janelaHook = null;
+export const setJanelaHook = fn => { janelaHook = fn; };
 export function janela({titulo, corpo, botoes = [], larga = false, aoAbrir}){
   return new Promise(resolve => {
     const fundo = document.createElement('div');
@@ -133,7 +135,8 @@ export function janela({titulo, corpo, botoes = [], larga = false, aoAbrir}){
       };
     });
     if(aoAbrir) aoAbrir(ctx);
-    setTimeout(() => { if(jan.contains(document.activeElement)) return; const f = jan.querySelector('.jb input:not([type=hidden]):not([type=checkbox]), .jb select, .jb textarea'); if(f) f.focus(); }, 30);
+    if(janelaHook) try{ janelaHook(jan); }catch(e){ console.warn(e); }
+    setTimeout(() => { if(jan.contains(document.activeElement)) return; const f = jan.querySelector('.jb input:not([type=hidden]):not([type=checkbox]):not(.combo-inp), .jb textarea'); if(f) f.focus(); }, 30);
   });
 }
 export const confirmar = (titulo, texto, sim = 'Confirmar', classe = 'prim') =>

@@ -7,9 +7,10 @@ import * as forms from './forms.js';
 import {listaTarefas, ligarTarefas} from './v-painel.js';
 import {ir, recarregar} from './app.js';
 
+const ULTIMA = {};
 const TIPO_HIST = {nota: 'Anotação', contato: 'Contato', etapa: 'Funil', proposta: 'Proposta', pdf: 'PDF', tarefa: 'Tarefa', site: 'Site', contrato: 'Contrato', financeiro: 'Financeiro', sistema: 'Sistema'};
 
-export async function render(el, {id, op: opFoco}){
+export async function render(el, {id, op: opFoco, aba: abaQ}){
   const [c, ops, props, contratos, tarefas, hist, pedidos, lancs] = await Promise.all([
     q.um(T.clientes, id),
     q.lista(T.oport, '*', x => x.eq('cliente_id', id).order('criado_em', {ascending: false})),
@@ -26,66 +27,68 @@ export async function render(el, {id, op: opFoco}){
   const aReceber = lancs.filter(l => l.tipo === 'receita' && l.status === 'pendente').reduce((s, l) => s + Number(l.valor_centavos), 0);
   const ped = pedidos[0];
 
+  const abas = [['projetos', 'Projetos'], ...(ped ? [['briefing', 'O que contou']] : []), ['financeiro', 'Financeiro'], ['historico', 'Histórico'], ['dados', 'Dados']];
+  const pedida = abaQ || ULTIMA[id];
+  const abaIni = abas.some(a => a[0] === pedida) ? pedida : 'projetos';
   el.innerHTML = `
     <div class="ficha-cab">
       <div class="fc-topo">
         <div class="av">${esc(iniciais(c.nome))}</div>
         <div class="info">
-          <div class="eyebrow">${c.arquivado ? 'Cliente arquivado' : 'Cliente'} · ${esc(rot(TIPOS, c.tipo))}</div>
+          <div class="eyebrow">${c.arquivado ? 'Cliente arquivado' : esc(rot(TIPOS, c.tipo))}</div>
           <h1>${esc(c.nome)}</h1>
-          ${c.marca || c.cidade ? `<div class="fc-sub">${esc([c.marca, [c.cidade, c.uf].filter(Boolean).join('/')].filter(Boolean).join(' · '))}</div>` : ''}
+          ${c.marca || c.whatsapp ? `<div class="fc-sub">${esc([c.marca, c.whatsapp].filter(Boolean).join(' · '))}</div>` : ''}
         </div>
-      </div>
-      <div class="meta">
-        ${c.whatsapp ? `<span class="tag">${esc(c.whatsapp)}</span>` : ''}
-        <span class="tag">via ${esc(rot(ORIGENS, c.origem))}</span>
-        <span class="tag">desde ${dataBR(c.criado_em)}</span>
-        ${recebido ? `<span class="tag">recebido ${brlC(recebido)}</span>` : ''}
       </div>
       <div class="acoes">
         ${w ? `<a class="btn verde" href="${w}" target="_blank" rel="noopener"><span class="ic">${ICONES.whats}</span>WhatsApp</a>` : ''}
         <button class="btn prim" data-a="proposta"><span class="ic">${ICONES.propostas}</span>Proposta</button>
         <button class="btn linha" data-a="tarefa">Tarefa</button>
-        <button class="btn linha" data-a="receita">Receita</button>
-        <button class="btn fantasma" data-a="editar">Editar</button>
       </div>
     </div>
-    <div class="cols-ficha">
-      <div>
-        ${ped ? `<div class="card"><h3>O que contou no site <span class="pill dir">pedido nº ${ped.numero} · ${dataBR(ped.criado_em)}</span></h3>
-          <div class="briefing"><div class="bq ideia"><div class="k">A ideia</div><div class="v">${esc(ped.ideia)}</div></div>
-          ${CAMPOS_BRIEFING.filter(([k]) => (ped.respostas || {})[k]).map(([k, t]) => `<div class="bq"><div class="k">${t}</div><div class="v">${esc(ped.respostas[k])}</div></div>`).join('')}</div>
-          ${pedidos.length > 1 ? `<p class="muted" style="font-size:13px;">Mais ${pedidos.length - 1} ${pedidos.length === 2 ? 'pedido anterior' : 'pedidos anteriores'} na <a href="#/pedidos?f=todos">caixa de entrada</a>.</p>` : ''}</div>` : ''}
-        <div class="card"><h3>Projetos <button class="btn linha peq dir" data-a="oport">Novo projeto</button></h3>
-          ${ops.length ? ops.map(o => blocoOp(o, props.filter(p => p.oportunidade_id === o.id), contratos.filter(k => k.oportunidade_id === o.id), o.id === opFoco)).join('') : '<div class="vazio">Nenhum projeto. Crie um para acompanhar este cliente no funil.</div>'}</div>
-        <div class="card"><h3>Próximas ações</h3>
-          <div id="tarefas">${listaTarefas(tarefas) || '<div class="vazio">Nenhuma ação agendada. Marque o próximo passo para não esquecer deste cliente.</div>'}</div></div>
-        <div class="card"><h3>Financeiro do cliente <a class="btn fantasma peq dir" href="#/financeiro?aba=lancamentos&cliente=${id}">Ver no financeiro</a></h3>
-          <div class="resumo-mes"><div class="kpi" style="--c:var(--verde);box-shadow:none;"><div class="k"><i></i>Recebido</div><div class="v din" style="font-size:26px;">${brlC(recebido)}</div></div>
-            <div class="kpi" style="--c:var(--laranja);box-shadow:none;"><div class="k"><i></i>A receber</div><div class="v din" style="font-size:26px;">${brlC(aReceber)}</div></div>
-            <div class="kpi" style="--c:var(--azul);box-shadow:none;"><div class="k"><i></i>Lançamentos</div><div class="v" style="font-size:26px;">${lancs.length}</div></div></div>
-          ${lancs.length ? lancs.slice(0, 8).map(l => `<div class="item-lista"><span class="lanc-tipo ${l.tipo}">${ICONES[l.tipo]}</span><div class="tx"><b>${esc(l.descricao)}</b><span>${dataCurta(l.data)} · <span class="tag ${l.status}">${l.status === 'pago' ? (l.tipo === 'receita' ? 'Recebido' : 'Pago') : 'Pendente'}</span></span></div><span class="vl ${l.tipo === 'receita' ? 'valor-pos' : 'valor-neg'}">${brlC(l.valor_centavos)}</span></div>`).join('')
-            : '<div class="vazio">Nenhum recebimento ligado a este cliente. Ao marcar um projeto como fechado, as parcelas entram aqui.</div>'}</div>
-        <div class="card"><h3>Dados do cliente <button class="btn fantasma peq dir" data-a="editar">Editar</button></h3>
-          <div class="dados">
-            ${dado('WhatsApp', c.whatsapp)}${dado('E-mail', c.email)}${dado('Cidade', [c.cidade, c.uf].filter(Boolean).join('/'))}${dado('CPF / CNPJ', c.cpf_cnpj)}
-            ${dado('Marca', c.marca)}${dado('Tipo', rot(TIPOS, c.tipo))}${dado('Origem', rot(ORIGENS, c.origem))}${dado('Último contato', c.ultimo_contato_em ? dataHoraBR(c.ultimo_contato_em) : '')}
-          </div>
-          ${c.observacoes ? `<div style="margin-top:.9rem;" class="dados"><div style="grid-column:1/-1;"><div class="k">Observações</div><div class="v" style="white-space:pre-wrap;">${esc(c.observacoes)}</div></div></div>` : ''}
-          <div style="margin-top:1rem;"><button class="btn ${c.arquivado ? 'linha' : 'perigo'} peq" data-a="arquivar">${c.arquivado ? 'Reativar cliente' : 'Arquivar cliente'}</button>
-            <span class="muted" style="font-size:12.5px;margin-left:.4rem;">${c.arquivado ? '' : 'O histórico, as propostas e os lançamentos continuam guardados.'}</span></div>
-        </div>
-      </div>
-      <div class="card"><h3>Histórico</h3>
-        <form class="nova-nota" id="nota">
-          <textarea id="notaTx" placeholder="Registrar o que aconteceu… ex.: Conversamos por vídeo; quer começar pela agenda." rows="2"></textarea>
-          <div class="l"><select id="notaTipo" aria-label="Tipo"><option value="nota">Anotação</option><option value="contato">Contato com o cliente</option></select>
-            <button class="btn prim peq" type="submit">Registrar</button></div>
-        </form>
-        <div class="timeline">${hist.map(h => `<div class="ev ev-${h.tipo}"><div class="dt">${dataHoraBR(h.criado_em)} · ${esc(TIPO_HIST[h.tipo] || h.tipo)}</div><div class="tx">${esc(h.texto)}</div><div class="au">${esc(h.autor || '')}</div></div>`).join('') || '<div class="vazio">Sem registros.</div>'}</div>
-      </div>
-    </div>`;
+    <nav class="abas" id="abasCli">${abas.map(([k, n]) => `<a href="#" data-aba="${k}" class="${k === abaIni ? 'on' : ''}">${n}</a>`).join('')}</nav>
 
+    <section data-sec="projetos">
+      ${ops.length ? ops.map(o => blocoOp(o, props.filter(p => p.oportunidade_id === o.id), contratos.filter(k => k.oportunidade_id === o.id), o.id === opFoco)).join('') : '<div class="vazio">Nenhum projeto. Crie um para acompanhar este cliente no funil.</div>'}
+      <button class="btn linha peq" data-a="oport" style="margin-bottom:1rem;">＋ Novo projeto</button>
+      <div class="card limpo"><h3>Próximas ações</h3>
+        <div id="tarefas">${listaTarefas(tarefas) || '<div class="vazio">Nenhuma ação agendada. Marque o próximo passo para não esquecer deste cliente.</div>'}</div></div>
+    </section>
+
+    ${ped ? `<section data-sec="briefing"><div class="card limpo">
+        <div class="briefing"><div class="bq ideia"><div class="k">A ideia · pedido nº ${ped.numero} · ${dataBR(ped.criado_em)}</div><div class="v">${esc(ped.ideia)}</div></div>
+        ${CAMPOS_BRIEFING.filter(([k]) => (ped.respostas || {})[k]).map(([k, t]) => `<div class="bq"><div class="k">${t}</div><div class="v">${esc(ped.respostas[k])}</div></div>`).join('')}</div>
+        ${pedidos.length > 1 ? `<p class="muted" style="font-size:13px;">Mais ${pedidos.length - 1} ${pedidos.length === 2 ? 'pedido anterior' : 'pedidos anteriores'} na <a href="#/pedidos?f=todos">caixa de entrada</a>.</p>` : ''}</div></section>` : ''}
+
+    <section data-sec="financeiro">
+      <div class="faixa-num" style="margin-bottom:1rem;"><a href="#/financeiro?aba=lancamentos&cliente=${id}"><span>Recebido</span><b class="din valor-pos">${brlC(recebido)}</b></a><a href="#/financeiro?aba=lancamentos&cliente=${id}"><span>A receber</span><b class="din">${brlC(aReceber)}</b></a></div>
+      <div class="card limpo">
+      ${lancs.length ? lancs.slice(0, 12).map(l => `<div class="item-lista"><span class="lanc-tipo ${l.tipo}">${ICONES[l.tipo]}</span><div class="tx"><b>${esc(l.descricao)}</b><span>${dataCurta(l.data)} · ${l.status === 'pago' ? (l.tipo === 'receita' ? 'recebido' : 'pago') : 'pendente'}</span></div><span class="vl ${l.tipo === 'receita' ? 'valor-pos' : 'valor-neg'}">${brlC(l.valor_centavos)}</span></div>`).join('')
+        : '<div class="vazio">Nenhum lançamento ligado a este cliente. Ao marcar um projeto como fechado, as parcelas entram aqui.</div>'}
+      <button class="btn linha peq" data-a="receita" style="margin-top:.8rem;">＋ Receita</button></div>
+    </section>
+
+    <section data-sec="historico"><div class="card limpo">
+      <form class="nova-nota" id="nota">
+        <textarea id="notaTx" placeholder="Registrar o que aconteceu…" rows="2"></textarea>
+        <div class="l"><select id="notaTipo" aria-label="Tipo"><option value="nota">Anotação</option><option value="contato">Contato com o cliente</option></select>
+          <button class="btn prim peq" type="submit">Registrar</button></div>
+      </form>
+      <div class="timeline">${hist.map(h => `<div class="ev ev-${h.tipo}"><div class="dt">${dataHoraBR(h.criado_em)} · ${esc(TIPO_HIST[h.tipo] || h.tipo)}</div><div class="tx">${esc(h.texto)}</div></div>`).join('') || '<div class="vazio">Sem registros.</div>'}</div>
+    </div></section>
+
+    <section data-sec="dados"><div class="card limpo">
+      <div class="dados">
+        ${dado('WhatsApp', c.whatsapp)}${dado('E-mail', c.email)}${dado('Cidade', [c.cidade, c.uf].filter(Boolean).join('/'))}${dado('CPF / CNPJ', c.cpf_cnpj)}
+        ${dado('Marca', c.marca)}${dado('Tipo', rot(TIPOS, c.tipo))}${dado('Origem', rot(ORIGENS, c.origem))}${dado('Cliente desde', dataBR(c.criado_em))}
+      </div>
+      ${c.observacoes ? `<div style="margin-top:.9rem;" class="dados"><div style="grid-column:1/-1;"><div class="k">Observações</div><div class="v" style="white-space:pre-wrap;">${esc(c.observacoes)}</div></div></div>` : ''}
+      <div style="margin-top:1.1rem;display:flex;gap:.5rem;flex-wrap:wrap;"><button class="btn linha peq" data-a="editar">Editar dados</button><button class="btn ${c.arquivado ? 'linha' : 'perigo'} peq" data-a="arquivar">${c.arquivado ? 'Reativar cliente' : 'Arquivar cliente'}</button></div>
+    </div></section>`;
+
+  const mostrarAba = k => { ULTIMA[id] = k; el.querySelectorAll('[data-sec]').forEach(s => s.hidden = s.dataset.sec !== k); el.querySelectorAll('#abasCli a').forEach(a => a.classList.toggle('on', a.dataset.aba === k)); };
+  el.querySelectorAll('#abasCli a').forEach(a => a.onclick = e => { e.preventDefault(); mostrarAba(a.dataset.aba); });
+  mostrarAba(abaIni);
   ligarTarefas(el.querySelector('#tarefas'));
   const ta = el.querySelector('#notaTx'); ta.addEventListener('input', () => autoAltura(ta));
   el.querySelector('#nota').addEventListener('submit', async e => {
@@ -147,13 +150,14 @@ function blocoOp(o, props, contratos, foco){
     </div>
     ${props.length || contratos.length ? `<div class="props">${props.map(p => `<a href="#/proposta/${p.id}"><span class="num">Proposta ${p.numero}</span>${esc(p.titulo || '')}<span class="tag ${p.status}">${statusNome(p.status)}</span><span class="tt">${brl(p.total)}</span></a>`).join('')}
       ${contratos.map(k => `<a href="#/contrato/${k.id}"><span class="num" style="color:#1E7A7A;">Contrato ${k.numero}</span>${esc(k.titulo)}<span class="tag ${k.assinado_em ? 'aprovada' : 'rascunho'}">${k.assinado_em ? 'Assinado' : 'Aguardando assinatura'}</span></a>`).join('')}</div>` : ''}
-    ${posVenda ? `<div class="posvenda"><div class="eyebrow" style="margin-bottom:.4rem;">Construção e entrega</div>
+    ${posVenda ? `<details class="mais-itens"${o.link_app ? '' : ''}><summary>Entrega e links${o.entrega_prevista ? ' · prevista ' + dataBR(o.entrega_prevista + 'T12:00:00') : ''}</summary><div class="posvenda">
       <div class="grade3"><div class="campo"><label class="rot">Entrega prevista</label><input type="date" data-pv="entrega_prevista" value="${o.entrega_prevista || ''}"></div>
       <div class="campo"><label class="rot">Entregue em</label><input type="date" data-pv="entregue_em" value="${o.entregue_em || ''}" ${o.etapa === 'entregue' ? '' : 'disabled'}></div>
       <div class="campo"><label class="rot">Suporte até</label><input type="date" data-pv="suporte_ate" value="${o.suporte_ate || ''}"></div></div>
       <div class="grade2"><div class="campo"><label class="rot">Link do app</label><input type="url" data-pv="link_app" value="${esc(o.link_app)}" placeholder="https://"></div>
       <div class="campo"><label class="rot">Repositório</label><input type="url" data-pv="repositorio" value="${esc(o.repositorio)}" placeholder="https://github.com/…"></div></div>
-      ${o.link_app ? `<p style="margin:.6rem 0 0;font-size:13px;"><a href="${esc(o.link_app)}" target="_blank" rel="noopener">Abrir o app ↗</a></p>` : ''}</div>` : ''}
+      </div></details>` : ''}
+    ${o.link_app ? `<p style="margin:.5rem 0 0;font-size:13px;"><a href="${esc(o.link_app)}" target="_blank" rel="noopener">Abrir o app ↗</a></p>` : ''}
     <div class="rodape"><button class="btn linha peq" data-oa="proposta">Proposta</button>${['negociacao', 'fechado', 'entregue', 'proposta'].includes(o.etapa) ? '<button class="btn linha peq" data-oa="contrato">Contrato</button>' : ''}<button class="btn fantasma peq" data-oa="tarefa">Tarefa</button><button class="btn fantasma peq" data-oa="editar">Editar</button></div>
   </div>`;
 }

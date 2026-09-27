@@ -37,7 +37,13 @@ export const ICONES = {
   editar: s('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/>'),
   pdf: s('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6M9.5 14.5 12 17l2.5-2.5"/>'),
   copiar: s('<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/>'),
-  seta: s('<path d="M5 12h14M13 6l6 6-6 6"/>')
+  seta: s('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+  administrativo: s('<rect x="3.5" y="7" width="17" height="12.5" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/><path d="M3.5 12.5h17"/><path d="M11 12.5v1.5h2v-1.5"/>'),
+  cofre: s('<rect x="3.5" y="4" width="17" height="15.5" rx="3"/><circle cx="12" cy="11.75" r="3.2"/><path d="M12 8.55v1.2M12 13.75v1.2M8.8 11.75H10M14 11.75h1.2"/><path d="M6.5 19.5v1.5M17.5 19.5v1.5"/>'),
+  olho: s('<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'),
+  olho_fechado: s('<path d="M3 3l18 18"/><path d="M10.6 5.6A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.4 6.9A16.7 16.7 0 0 0 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
+  cadeado: s('<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none"/>'),
+  chave: s('<circle cx="8" cy="15" r="4"/><path d="M11 12l8.5-8.5M16.5 6.5l2 2M14.5 8.5l1.5 1.5"/>')
 };
 
 export const icone = (k, cls = 'ic') => `<span class="${cls}">${ICONES[k] || ''}</span>`;

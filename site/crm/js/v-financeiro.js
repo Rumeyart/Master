@@ -4,7 +4,7 @@ import {esc, brl, brlC, centavos, inputValor, valorDigitado, dataCurta, dataBR, 
 import {ICONES} from './icones.js';
 import {ir, recarregar} from './app.js';
 
-const ABAS = [['visao', 'Visão geral', 'visao'], ['lancamentos', 'Lançamentos', 'financeiro'], ['contas', 'Contas e cartões', 'cartao'], ['categorias', 'Categorias', 'categorias'], ['importar', 'Importar extrato', 'importar']];
+const ABAS = [['visao', 'Visão geral', 'visao'], ['lancamentos', 'Lançamentos', 'financeiro'], ['analise', 'Análise', 'categorias'], ['contas', 'Contas e cartões', 'cartao'], ['categorias', 'Categorias', 'categorias'], ['importar', 'Importar extrato', 'importar']];
 const TIPO_NOME = {receita: 'Receita', despesa: 'Despesa', transferencia: 'Transferência', pagamento_fatura: 'Pagamento de fatura'};
 const TIPOS_CONTA = [['corrente', 'Conta corrente'], ['digital', 'Conta digital'], ['poupanca', 'Poupança'], ['caixa', 'Dinheiro / caixa'], ['investimento', 'Investimento']];
 const CORES = ['#2566A8', '#16213A', '#E0703A', '#7A4466', '#1E7A7A', '#2F7D55', '#A8741A', '#5C6477'];
@@ -13,15 +13,16 @@ export async function render(el, params){
   const aba = ABAS.some(a => a[0] === params.aba) ? params.aba : 'visao';
   const mes = /^\d{4}-\d{2}$/.test(params.mes || '') ? params.mes : mesChave();
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Gestão</div><h1>Financeiro</h1>
-      <div class="dir">${['visao', 'lancamentos'].includes(aba) ? `<div class="seg" style="align-items:center;"><button type="button" data-mes="${somaMes(mes, -1)}" aria-label="Mês anterior">‹</button><button type="button" class="on" data-mes="${mesChave()}" title="Voltar para este mês">${mesNome(mes)}</button><button type="button" data-mes="${somaMes(mes, 1)}" aria-label="Próximo mês">›</button></div>` : ''}
+    <div class="cab"><h1>Financeiro</h1>
+      <div class="dir">${['visao', 'lancamentos', 'analise'].includes(aba) ? `<div class="seg" style="align-items:center;"><button type="button" data-mes="${somaMes(mes, -1)}" aria-label="Mês anterior">‹</button><button type="button" class="on" data-mes="${mesChave()}" title="Voltar para este mês">${mesNome(mes)}</button><button type="button" data-mes="${somaMes(mes, 1)}" aria-label="Próximo mês">›</button></div>` : ''}
         <button class="btn linha" data-novo="despesa"><span class="ic">${ICONES.despesa}</span>Despesa</button><button class="btn prim" data-novo="receita"><span class="ic">${ICONES.receita}</span>Receita</button></div></div>
-    <nav class="abas">${ABAS.map(([k, n, ic]) => `<a href="#/financeiro?aba=${k}${['visao', 'lancamentos'].includes(k) && mes !== mesChave() ? '&mes=' + mes : ''}" class="${k === aba ? 'on' : ''}"><span class="ic">${ICONES[ic]}</span>${n}</a>`).join('')}</nav>
+    <nav class="abas">${ABAS.map(([k, n, ic]) => `<a href="#/financeiro?aba=${k}${['visao', 'lancamentos', 'analise'].includes(k) && mes !== mesChave() ? '&mes=' + mes : ''}" class="${k === aba ? 'on' : ''}"><span class="ic">${ICONES[ic]}</span>${n}</a>`).join('')}</nav>
     <div id="fin"><div class="carregando">Carregando…</div></div>`;
   el.querySelectorAll('[data-mes]').forEach(b => b.onclick = () => ir(`financeiro?aba=${aba}&mes=${b.dataset.mes}${params.cliente ? '&cliente=' + params.cliente : ''}`));
   el.querySelectorAll('[data-novo]').forEach(b => b.onclick = async () => { if(await lancamento({tipo: b.dataset.novo})){ aviso('Lançamento salvo.'); recarregar(); } });
   const alvo = el.querySelector('#fin');
   if(aba === 'visao') await visao(alvo, mes);
+  if(aba === 'analise') await visao(alvo, mes, true);
   if(aba === 'lancamentos') await lancamentos(alvo, mes, params);
   if(aba === 'contas') await contasCartoes(alvo);
   if(aba === 'categorias') await categoriasAba(alvo);
@@ -29,7 +30,7 @@ export async function render(el, params){
 }
 
 // ================= visão geral =================
-async function visao(el, mes){
+async function visao(el, mes, analise){
   const [ini, fim] = mesLimites(mes), ini6 = mesLimites(somaMes(mes, -5))[0];
   const [lancs, hist, saldos, faturas, cats, pend] = await Promise.all([
     q.lista(T.lanc, '*', x => x.gte('data', ini).lt('data', fim).order('data')),
@@ -56,22 +57,22 @@ async function visao(el, mes){
       <div class="kpi" style="--c:var(--vermelho)"><div class="k"><i></i>Despesas</div><div class="v din valor-neg">${brlC(des)}</div><div class="d">${desP > des ? `+ ${brlC(desP - des)} a pagar` : 'nada pendente'}</div></div>
       <div class="kpi destaque"><div class="k"><i></i>Resultado do mês</div><div class="v din">${brlC(rec - des)}</div><div class="d">previsto: ${brlC(recP - desP)}</div></div>
     </div>
-    <div class="cols">
-      <div>
-        <div class="card"><h3>Receitas e despesas · 6 meses</h3><div class="grafico">${grafico(serie)}</div>
+    ${analise ? `<div class="cols">
+        <div class="card limpo"><h3>Receitas e despesas · 6 meses</h3><div class="grafico">${grafico(serie)}</div>
           <div class="legenda"><span><i style="background:var(--azul)"></i>Receitas</span><span><i style="background:var(--laranja)"></i>Despesas</span></div></div>
-        <div class="card"><h3>Para onde foi o dinheiro</h3>
+        <div class="card limpo"><h3>Para onde foi o dinheiro</h3>
           ${catsDes.length ? catsDes.map(c => `<div class="cat-linha" style="--c:${c.cor}"><div class="nm"><i></i>${esc(c.nome)}</div><div class="vl">${brlC(c.v)}</div><div class="br"><i style="width:${Math.round(c.v / maxCat * 100)}%"></i></div></div>`).join('') : '<div class="vazio">Nenhuma despesa neste mês.</div>'}</div>
-      </div>
+      </div>` : `<div class="cols">
       <div>
-        <div class="card"><h3>Contas <a class="btn fantasma peq dir" href="#/financeiro?aba=contas">Gerenciar</a></h3>
+        <div class="card limpo"><h3>Contas <a class="btn fantasma peq dir" href="#/financeiro?aba=contas">Gerenciar</a></h3>
           <div class="contas-grade">${saldos.map(c => `<div class="conta-card" style="--cc:${c.cor || '#2566A8'}" data-conta="${c.id}"><div><div class="t">${esc(c.banco || tipoConta(c.tipo))}</div><div class="nm">${esc(c.apelido)}</div></div><div><div class="v">${brlC(c.saldo_centavos)}</div>${c.saldo_previsto_centavos !== c.saldo_centavos ? `<div class="p">previsto ${brlC(c.saldo_previsto_centavos)}</div>` : ''}</div></div>`).join('')}
           ${faturas.map(k => `<div class="conta-card cartao-card" data-cartao="${k.id}"><div><div class="t">Cartão${k.final ? ' •••• ' + esc(k.final) : ''}</div><div class="nm">${esc(k.nome)}</div></div><div><div class="v">${brlC(k.fatura_centavos)}</div><div class="p">${k.vencimento ? 'vence dia ' + k.vencimento : 'fatura em aberto'}${k.limite_centavos ? ' · limite ' + brlC(k.limite_centavos) : ''}</div></div></div>`).join('')}</div></div>
-        <div class="card"><h3>A receber e a pagar</h3>
-          ${pend.length ? pend.map(l => `<div class="item-lista"><span class="lanc-tipo ${l.tipo}">${ICONES[l.tipo]}</span><div class="tx"><b>${esc(l.descricao)}</b><span class="${l.data < hoje ? 'valor-neg' : ''}">${l.data < hoje ? 'venceu ' : ''}${dataCurta(l.data)}${l.cliente?.nome ? ' · ' + esc(l.cliente.nome) : ''}${l.parcelas > 1 ? ` · ${l.parcela}/${l.parcelas}` : ''}</span></div><span class="vl ${l.tipo === 'receita' ? 'valor-pos' : 'valor-neg'}">${brlC(l.valor_centavos)}</span><button class="btn verde peq" data-pagar="${l.id}">${l.tipo === 'receita' ? 'Recebi' : 'Paguei'}</button></div>`).join('')
+      </div><div>
+        <div class="card limpo"><h3>A receber e a pagar</h3>
+          ${pend.length ? pend.slice(0, 8).map(l => `<div class="item-lista"><span class="lanc-tipo ${l.tipo}">${ICONES[l.tipo]}</span><div class="tx"><b>${esc(l.descricao)}</b><span class="${l.data < hoje ? 'valor-neg' : ''}">${l.data < hoje ? 'venceu ' : ''}${dataCurta(l.data)}${l.cliente?.nome ? ' · ' + esc(l.cliente.nome) : ''}${l.parcelas > 1 ? ` · ${l.parcela}/${l.parcelas}` : ''}</span></div><span class="vl ${l.tipo === 'receita' ? 'valor-pos' : 'valor-neg'}">${brlC(l.valor_centavos)}</span><button class="btn verde peq" data-pagar="${l.id}">${l.tipo === 'receita' ? 'Recebi' : 'Paguei'}</button></div>`).join('')
             : '<div class="vazio">Nada pendente até o fim do próximo mês.</div>'}</div>
       </div>
-    </div>`;
+    </div>`}`;
   el.querySelectorAll('[data-pagar]').forEach(b => b.onclick = () => marcarPago(pend.find(l => l.id === b.dataset.pagar)));
   el.querySelectorAll('[data-conta]').forEach(c => c.onclick = () => ir('financeiro?aba=lancamentos&conta=' + c.dataset.conta));
   el.querySelectorAll('[data-cartao]').forEach(c => c.onclick = () => ir('financeiro?aba=lancamentos&cartao=' + c.dataset.cartao));
@@ -183,21 +184,21 @@ export async function lancamento(o = {}){
     </div>
     <div class="campo"><label class="rot" for="l_desc">Descrição *</label><input type="text" id="l_desc" value="${esc(L.descricao)}" list="l_sug" maxlength="160"><datalist id="l_sug"></datalist></div>
     <div data-so="receita despesa" class="grade2">
-      <div class="campo"><label class="rot" for="l_cat">Categoria</label><select id="l_cat"></select></div>
-      <div class="campo"><label class="rot" for="l_sub">Subcategoria</label><select id="l_sub"></select></div>
+      <div class="campo"><label class="rot" for="l_cat">Categoria</label><select id="l_cat" data-add="categoria"></select></div>
+      <div class="campo"><label class="rot" for="l_sub">Subcategoria</label><select id="l_sub" data-add="sub" data-cat-de="#l_cat"></select></div>
     </div>
-    <div data-so="receita" class="campo"><label class="rot" for="l_conta_r">Conta que recebe</label><select id="l_conta_r">${optContas(L.conta_id)}</select></div>
+    <div data-so="receita" class="campo"><label class="rot" for="l_conta_r">Conta que recebe</label><select id="l_conta_r" data-add="conta">${optContas(L.conta_id)}</select></div>
     <div data-so="despesa" class="campo"><label class="rot" for="l_onde">Pago com</label><select id="l_onde">${optOnde()}</select></div>
     <div data-so="transferencia" class="grade2">
-      <div class="campo"><label class="rot" for="l_de">De</label><select id="l_de">${optContas(L.conta_id)}</select></div>
-      <div class="campo"><label class="rot" for="l_para">Para</label><select id="l_para">${optContas(L.conta_destino_id || contasAt.find(c => c.id !== L.conta_id)?.id)}</select></div>
+      <div class="campo"><label class="rot" for="l_de">De</label><select id="l_de" data-add="conta">${optContas(L.conta_id)}</select></div>
+      <div class="campo"><label class="rot" for="l_para">Para</label><select id="l_para" data-add="conta">${optContas(L.conta_destino_id || contasAt.find(c => c.id !== L.conta_id)?.id)}</select></div>
     </div>
     <div data-so="pagamento_fatura" class="grade2">
       <div class="campo"><label class="rot" for="l_cartao">Cartão</label><select id="l_cartao">${cartoesAt.map(k => `<option value="${k.id}" ${k.id === L.cartao_id ? 'selected' : ''}>${esc(k.nome)}</option>`).join('') || '<option value="">Cadastre um cartão</option>'}</select></div>
-      <div class="campo"><label class="rot" for="l_conta_p">Conta que paga</label><select id="l_conta_p">${optContas(L.conta_id)}</select></div>
+      <div class="campo"><label class="rot" for="l_conta_p">Conta que paga</label><select id="l_conta_p" data-add="conta">${optContas(L.conta_id)}</select></div>
     </div>
-    <div data-so="receita" class="campo"><label class="rot" for="l_cli">Cliente <small>(opcional)</small></label><select id="l_cli"><option value="">—</option>${cls.map(c => `<option value="${c.id}" ${c.id === L.cliente_id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</select></div>
-    <div data-so="despesa" class="campo"><label class="rot" for="l_forn">Fornecedor <small>(opcional)</small></label><select id="l_forn"><option value="">—</option>${fs.filter(f => f.ativo || f.id === L.fornecedor_id).map(f => `<option value="${f.id}" ${f.id === L.fornecedor_id ? 'selected' : ''}>${esc(f.nome)}</option>`).join('')}</select></div>
+    <div data-so="receita" class="campo"><label class="rot" for="l_cli">Cliente <small>(opcional)</small></label><select id="l_cli" data-add="cliente"><option value="">—</option>${cls.map(c => `<option value="${c.id}" ${c.id === L.cliente_id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</select></div>
+    <div data-so="despesa" class="campo"><label class="rot" for="l_forn">Fornecedor <small>(opcional)</small></label><select id="l_forn" data-add="fornecedor"><option value="">—</option>${fs.filter(f => f.ativo || f.id === L.fornecedor_id).map(f => `<option value="${f.id}" ${f.id === L.fornecedor_id ? 'selected' : ''}>${esc(f.nome)}</option>`).join('')}</select></div>
     <label class="chk"><input type="checkbox" id="l_pago" ${L.status === 'pago' ? 'checked' : ''}> <span id="l_pago_t">Já foi pago</span></label>
     ${e ? (grupo.length > 1 ? `<p class="muted" style="font-size:12.5px;margin-top:.8rem;">Parte de um grupo de ${grupo.length} lançamentos (${e.recorrente ? 'repetição mensal' : 'parcelas'}). As mudanças valem só para este.</p>` : '') : `
     <div data-so="receita despesa" style="margin-top:.9rem;padding:.8rem .9rem;border-radius:14px;background:var(--areia-2);">
@@ -215,6 +216,7 @@ export async function lancamento(o = {}){
         $('#l_pago_t').textContent = tipo === 'receita' ? 'Já foi recebido' : tipo === 'transferencia' ? 'Já foi feita' : 'Já foi pago';
         const cs2 = cats.filter(c => c.tipo === tipo && (!c.arquivada || c.id === L.categoria_id));
         if(['receita', 'despesa'].includes(tipo)){
+          $('#l_cat').dataset.tipo = tipo;
           $('#l_cat').innerHTML = '<option value="">— sem categoria —</option>' + cs2.map(c => `<option value="${c.id}" ${c.id === L.categoria_id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
           subs();
         }
@@ -334,7 +336,7 @@ function editarCartao(k, cs){
       <div class="campo"><label class="rot" for="k_ve">Vence dia</label><input type="number" id="k_ve" min="1" max="31" value="${x.vencimento || ''}"></div></div>
     <div class="grade2"><div class="campo"><label class="rot" for="k_li">Limite (R$)</label><input type="text" inputmode="decimal" id="k_li" value="${inputValor(x.limite_centavos)}"></div>
       <div class="campo"><label class="rot" for="k_fi">Fatura já em aberto (R$)</label><input type="text" inputmode="decimal" id="k_fi" value="${inputValor(x.fatura_inicial_centavos)}" placeholder="0,00"></div></div>
-    <div class="campo"><label class="rot" for="k_cp">Conta que paga a fatura</label><select id="k_cp"><option value="">—</option>${cs.filter(c => !c.arquivada).map(c => `<option value="${c.id}" ${c.id === x.conta_pagamento_id ? 'selected' : ''}>${esc(c.apelido)}</option>`).join('')}</select></div>
+    <div class="campo"><label class="rot" for="k_cp">Conta que paga a fatura</label><select id="k_cp" data-add="conta"><option value="">—</option>${cs.filter(c => !c.arquivada).map(c => `<option value="${c.id}" ${c.id === x.conta_pagamento_id ? 'selected' : ''}>${esc(c.apelido)}</option>`).join('')}</select></div>
     ${k ? `<label class="chk"><input type="checkbox" id="k_arq" ${x.arquivado ? 'checked' : ''}> Arquivado</label>` : ''}`,
     botoes: [...(k ? [{texto: 'Apagar', classe: 'perigo', acao: async () => { if(!(await confirmar('Apagar cartão', 'Só é possível apagar um cartão sem lançamentos. Se ele tem histórico, prefira arquivar.', 'Apagar', 'perigo'))) return false; await q.apaga(T.cartoes, k.id); return 'apagado'; }}] : []),
       {texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: async ctx => {

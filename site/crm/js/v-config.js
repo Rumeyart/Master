@@ -6,28 +6,32 @@ import {ICONES} from './icones.js';
 import * as pwa from './pwa.js';
 import {estado, recarregar} from './app.js';
 
+let CFG_ABA = 'aparencia';
 export async function render(el){
   const [cfg, admins] = await Promise.all([config(true), q.lista(T.admins, '*', x => x.order('email'))]);
   const P = cfg.proposta, E = cfg.empresa;
   const ta = (id, rotulo, v, dica = '') => `<div class="campo"><label class="rot" for="${id}">${rotulo} ${dica ? `<small>(${dica})</small>` : ''}</label><textarea id="${id}">${esc(v)}</textarea></div>`;
   const inp = (id, rotulo, v, extra = '') => `<div class="campo"><label class="rot" for="${id}">${rotulo}</label><input type="text" id="${id}" value="${esc(v)}" ${extra}></div>`;
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Gestão</div><h1>Configurações</h1></div>
-    <div class="cols">
-      <div class="card" style="grid-column:1 / -1;"><h3>Aparência <span class="muted" style="font-family:var(--f-corpo);font-size:13px;">vale só para este aparelho</span></h3>
+    <div class="cab"><h1>Configurações</h1></div>
+    <nav class="abas" id="abasCfg">${[['aparencia', 'Aparência e app'], ['propostas', 'Propostas'], ['empresa', 'Empresa'], ['acesso', 'Acesso e dados']].map(([k, n]) => `<a href="#" data-aba="${k}">${n}</a>`).join('')}</nav>
+    <div class="col-unica">
+    <section data-sec="aparencia">
+      <div class="card limpo"><h3>Aparência <span class="muted" style="font-family:var(--f-corpo);font-size:13px;">vale só para este aparelho</span></h3>
         <div class="rot">Tema</div>
         <div class="temas" id="temas" style="margin-top:.4rem;">${TEMAS.map(([k, n]) => `<button type="button" data-tema="${k}" class="${k === temaAtual() ? 'on' : ''}"><span class="amostra ${k}"></span>${esc(n)}</button>`).join('')}</div>
         <div class="rot" style="margin-top:1rem;">Tamanho da tela</div>
         <div class="seg" id="zooms" style="margin-top:.4rem;">${OPCOES_ZOOM.map(z => `<button type="button" data-z="${z}" class="${z === zoomAtual() ? 'on' : ''}">${z}%</button>`).join('')}</div>
         <div class="muted" style="font-size:12.5px;margin-top:.45rem;">O zoom com os dedos fica travado para a tela não escorregar; use estas opções para aumentar ou diminuir tudo.</div>
       </div>
-      <div class="card" style="grid-column:1 / -1;"><h3>Notificações e app</h3><div id="notifCorpo" class="muted">Verificando…</div></div>
-      <div>
-        <div class="card"><h3>Numeração</h3>
+      <div class="card limpo"><h3>Notificações e app</h3><div id="notifCorpo" class="muted">Verificando…</div></div>
+    </section>
+    <section data-sec="propostas">
+        <div class="card limpo"><h3>Numeração</h3>
           <div class="grade2"><div class="campo"><label class="rot" for="c_prox">Próxima proposta</label><input type="number" id="c_prox" min="1" value="${cfg.proximo_numero}"></div>
             <div class="campo"><label class="rot" for="c_cont">Próximo contrato</label><input type="number" id="c_cont" min="1" value="${cfg.proximo_contrato}"></div></div>
           <div class="muted" style="font-size:12.5px;margin-top:.4rem;">O próximo documento criado recebe esse número.</div></div>
-        <div class="card"><h3>Textos padrão da proposta</h3>
+        <div class="card limpo"><h3>Textos padrão da proposta</h3>
           <div class="muted" style="font-size:12.5px;margin:-.3rem 0 .4rem;">Entram em toda proposta nova. Propostas já criadas não mudam.</div>
           <div class="grade2">${inp('c_prazo', 'Prazo', P.prazo_padrao)}<div class="campo"><label class="rot" for="c_valid">Validade (dias)</label><input type="number" id="c_valid" min="1" max="90" value="${P.validade_dias || 15}"></div></div>
           ${ta('c_etp', 'Etapas de trabalho', P.etapas_padrao, 'Nome: descrição')}
@@ -35,30 +39,37 @@ export async function render(el){
           ${ta('c_inc', 'Está incluso', P.incluso_padrao)}
           ${ta('c_nao', 'Não está incluso', P.nao_incluso_padrao)}
           ${ta('c_cond', 'Letras miúdas', P.condicoes_padrao)}</div>
-        <div class="card"><h3>Dados da empresa <span class="muted" style="font-family:var(--f-corpo);font-size:13px;">aparecem nas propostas e contratos</span></h3>
+        <button class="btn prim" data-salvar>Salvar</button> <span class="salvo" data-msg></span>
+    </section>
+    <section data-sec="empresa">
+        <div class="card limpo"><h3>Dados da empresa <span class="muted" style="font-family:var(--f-corpo);font-size:13px;">aparecem nas propostas e contratos</span></h3>
           ${inp('e_nome', 'Nome', E.nome)}<div class="grade2">${inp('e_cnpj', 'CNPJ', E.cnpj)}${inp('e_whats', 'WhatsApp', E.whatsapp)}</div>
           <div class="grade2">${inp('e_email', 'E-mail', E.email)}${inp('e_site', 'Site', E.site)}</div>
           <div class="grade2">${inp('e_cid', 'Cidade (para contratos)', E.cidade, 'placeholder="Vargem Grande Paulista/SP"')}${inp('e_resp', 'Responsável (assina)', E.responsavel)}</div>
           ${inp('e_end', 'Endereço', E.endereco)}</div>
-        <button class="btn prim" id="salvar" style="margin-top:.2rem;">Salvar configurações</button> <span class="salvo" id="msg"></span>
-      </div>
-      <div>
-        <div class="card"><h3>Quem acessa o CRM</h3>
+        <button class="btn prim" data-salvar>Salvar</button> <span class="salvo" data-msg></span>
+    </section>
+    <section data-sec="acesso">
+        <div class="card limpo"><h3>Quem acessa o CRM</h3>
           ${admins.map(a => `<div class="item-lista"><span class="pe" style="border:0;padding:0;"><span class="av">${esc(a.email.slice(0, 2).toUpperCase())}</span></span><div class="tx"><b>${esc(a.email)}</b><span>${esc(a.papel)}${a.email === estado.usuario?.email?.toLowerCase() ? ' · você' : ''}</span></div>
             ${a.email !== estado.usuario?.email?.toLowerCase() ? `<button class="btn perigo peq" data-rem="${esc(a.email)}">Remover</button>` : ''}</div>`).join('')}
           <div class="campo"><label class="rot" for="novoAcesso">Liberar novo e-mail</label><div style="display:flex;gap:.5rem;"><input type="email" id="novoAcesso" placeholder="email@exemplo.com"><button class="btn linha" id="addAcesso">Liberar</button></div>
             <div class="muted" style="font-size:12.5px;margin-top:.35rem;">A pessoa cria a senha pelo link "Esqueci minha senha" na tela de entrada (o e-mail precisa estar confirmado no Supabase).</div></div></div>
-        <div class="card"><h3>Formulário do site</h3>
+        <div class="card limpo" hidden><h3>Formulário do site</h3>
           <p class="muted" style="margin-top:-.3rem;font-size:14px;">Toda ideia enviada pelo site cria (ou reaproveita, pelo WhatsApp) o cliente, abre um projeto em "Novo pedido", guarda as respostas em <a href="#/pedidos">Pedidos do site</a> e agenda a tarefa "Responder pedido do site". Você recebe o aviso no celular na hora.</p></div>
-        <div class="card"><h3>Seus dados</h3>
+        <div class="card limpo"><h3>Seus dados</h3>
           <p class="muted" style="margin-top:0;font-size:14px;">Baixe tudo quando quiser. As planilhas abrem no Excel e no Google Planilhas.</p>
           <div style="display:grid;gap:.45rem;">
             ${[['clientes', 'clientes', 'Clientes'], ['oportunidades', 'funil', 'Projetos / funil'], ['pedidos', 'pedidos', 'Pedidos do site'], ['propostas', 'propostas', 'Propostas'], ['financeiro', 'financeiro', 'Lançamentos financeiros'], ['tarefas', 'tarefas', 'Tarefas'], ['historico', 'nota', 'Histórico completo']]
               .map(([k, ic, n]) => `<button class="btn fantasma" data-exp="${k}" style="justify-content:flex-start;"><span class="ic">${ICONES[ic]}</span>${n} (CSV)</button>`).join('')}
             <button class="btn linha" data-exp="tudo" style="justify-content:flex-start;"><span class="ic">${ICONES.importar}</span>Cópia completa de tudo (JSON)</button>
           </div></div>
-      </div>
+    </section>
     </div>`;
+  let abaCfg = CFG_ABA;
+  const mostrarAba = k => { CFG_ABA = abaCfg = k; el.querySelectorAll('[data-sec]').forEach(s => s.hidden = s.dataset.sec !== k); el.querySelectorAll('#abasCfg a').forEach(a => a.classList.toggle('on', a.dataset.aba === k)); requestAnimationFrame(() => el.querySelectorAll('textarea').forEach(autoAltura)); };
+  el.querySelectorAll('#abasCfg a').forEach(a => a.onclick = e => { e.preventDefault(); mostrarAba(a.dataset.aba); });
+  mostrarAba(abaCfg);
   ['c_etp', 'c_pag', 'c_inc', 'c_nao'].forEach(i => listaBonita(el.querySelector('#' + i)));
   el.querySelectorAll('textarea').forEach(t => t.addEventListener('input', () => autoAltura(t)));
   requestAnimationFrame(() => el.querySelectorAll('textarea').forEach(autoAltura));
@@ -67,8 +78,8 @@ export async function render(el){
   montarNotificacoes(el.querySelector('#notifCorpo'));
   const v = id => el.querySelector('#' + id).value.trim();
 
-  el.querySelector('#salvar').onclick = async () => {
-    const msg = el.querySelector('#msg');
+  el.querySelectorAll('[data-salvar]').forEach(b => b.onclick = async () => {
+    const msg = b.nextElementSibling;
     const prox = parseInt(v('c_prox'), 10), cont = parseInt(v('c_cont'), 10);
     if(!(prox > 0) || !(cont > 0)){ msg.className = 'salvo erro'; msg.textContent = 'Número inválido.'; return; }
     const [{data: u1}, {data: u2}] = await Promise.all([sb.from(T.propostas).select('id').eq('numero', prox).limit(1), sb.from(T.contratos).select('id').eq('numero', cont).limit(1)]);
@@ -80,7 +91,7 @@ export async function render(el){
         empresa: {...E, nome: v('e_nome'), cnpj: v('e_cnpj'), whatsapp: v('e_whats'), email: v('e_email'), site: v('e_site'), cidade: v('e_cid'), responsavel: v('e_resp'), endereco: v('e_end')}});
       await config(true); msg.className = 'salvo'; msg.textContent = 'Salvo ✓';
     }catch(e){ msg.className = 'salvo erro'; msg.textContent = traduzErro(e); }
-  };
+  });
   el.querySelector('#addAcesso').onclick = async () => {
     const email = v('novoAcesso').toLowerCase(); if(!/^\S+@\S+\.\S+$/.test(email)){ aviso('Digite um e-mail válido.'); return; }
     const {error} = await sb.rpc('rumeyart_adicionar_acesso', {p_email: email, p_papel: 'admin'});

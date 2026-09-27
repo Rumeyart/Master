@@ -1,18 +1,21 @@
 // CRM Rumëyart — entrada: login, menus, rotas
 import {sb, T, limparCache} from './db.js';
-import {$, $$, esc, aviso, traduzErro, iniciais} from './util.js';
+import {$, $$, esc, aviso, traduzErro, iniciais, setJanelaHook} from './util.js';
+import {combosEm} from './combo.js';
+import './criadores.js';
 import * as forms from './forms.js';
 import {ICONES} from './icones.js';
 import {iniciarAparencia} from './aparencia.js';
 import * as pwa from './pwa.js';
 
 iniciarAparencia();
+setJanelaHook(combosEm);
 pwa.registrarSW();
 
 // Menu organizado em três grupos
 const GRUPOS = [
   ['Comercial', [['painel', 'Painel'], ['pedidos', 'Pedidos do site'], ['funil', 'Funil'], ['clientes', 'Clientes'], ['propostas', 'Propostas'], ['contratos', 'Contratos']]],
-  ['Operação', [['tarefas', 'Tarefas'], ['servicos', 'Serviços'], ['compras', 'Compras']]],
+  ['Operação', [['tarefas', 'Tarefas'], ['administrativo', 'Administrativo'], ['servicos', 'Serviços'], ['compras', 'Compras']]],
   ['Gestão', [['financeiro', 'Financeiro'], ['config', 'Configurações']]]
 ];
 const MOBILE = [['painel', 'Painel'], ['pedidos', 'Pedidos'], ['funil', 'Funil'], ['financeiro', 'Finanças']];
@@ -23,7 +26,7 @@ const VISTAS = {
   clientes: () => import('./v-clientes.js'), cliente: () => import('./v-cliente.js'),
   propostas: () => import('./v-propostas.js'), proposta: () => import('./v-proposta.js'),
   contratos: () => import('./v-contratos.js'), contrato: () => import('./v-contrato.js'),
-  tarefas: () => import('./v-tarefas.js'), servicos: () => import('./v-servicos.js'), compras: () => import('./v-compras.js'),
+  tarefas: () => import('./v-tarefas.js'), administrativo: () => import('./v-admin.js'), servicos: () => import('./v-servicos.js'), compras: () => import('./v-compras.js'),
   financeiro: () => import('./v-financeiro.js'), config: () => import('./v-config.js'), busca: () => import('./v-busca.js')
 };
 const PAI = {cliente: 'clientes', proposta: 'propostas', contrato: 'contratos', busca: ''};

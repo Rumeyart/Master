@@ -1,6 +1,6 @@
 // Pedidos do site: caixa de entrada com o briefing completo de cada ideia
 import {T, q, config} from './db.js';
-import {esc, dataHoraBR, haQuanto, whatsLink, primeiroNome, aviso, traduzErro, confirmar} from './util.js';
+import {esc, dataHoraBR, haQuanto, whatsLink, primeiroNome, aviso, traduzErro, confirmar, janela} from './util.js';
 import {CAMPOS_BRIEFING} from './proposta-doc.js';
 import {ICONES} from './icones.js';
 import * as forms from './forms.js';
@@ -19,9 +19,8 @@ export async function render(el, {f, id}){
   const eu = primeiroNome(cfg?.empresa?.responsavel) || 'Caio';
 
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Formulário do site</div><h1>Pedidos do site</h1>
-      <div class="dir"><input type="search" id="fBusca" placeholder="Filtrar por nome ou palavra" style="width:15rem;border-radius:999px;"></div>
-      <div class="sub">Cada ideia enviada pelo site vira um cliente, um projeto no funil e uma tarefa de resposta, com todas as respostas guardadas aqui.</div></div>
+    <div class="cab"><h1>Pedidos do site</h1>
+      <div class="dir"><input type="search" id="fBusca" placeholder="Filtrar" style="width:13rem;border-radius:999px;"></div></div>
     <div class="filtros"><div class="pilulas">${FILTROS.map(([k, t]) => `<button type="button" data-f="${k}" class="${k === filtro ? 'on' : ''}">${t} · ${n(k)}</button>`).join('')}</div></div>
     <div id="lista">${visiveis.map(p => cartao(p, eu)).join('') || `<div class="vazio">${filtro === 'novo' ? 'Nenhuma ideia nova esperando resposta.' : 'Nada por aqui ainda. Quando alguém preencher o formulário do site, a ideia chega nesta caixa.'}</div>`}</div>`;
 
@@ -48,6 +47,14 @@ export async function render(el, {f, id}){
       try{ const r = await forms.novaProposta({cliente_id: p.cliente_id, oportunidade_id: p.oportunidade_id}); if(r) ir('proposta/' + r.id); }catch(e){ aviso(traduzErro(e)); }
     });
     card.querySelector('[data-a=tarefa]')?.addEventListener('click', async () => { if(await forms.tarefa({cliente_id: p.cliente_id, oportunidade_id: p.oportunidade_id})){ aviso('Tarefa criada.'); } });
+    card.querySelector('[data-a=mais]')?.addEventListener('click', async () => {
+      const acoes = [p.cliente_id && ['cliente', ICONES.clientes, 'Abrir ficha do cliente'], p.cliente_id && p.oportunidade_id && ['prop', ICONES.propostas, 'Criar proposta'], p.cliente_id && ['tarefa', ICONES.tarefas, 'Agendar retorno'],
+        ['lido', ICONES.ok, p.status === 'respondido' ? 'Reabrir pedido' : 'Marcar como respondido'], ['desc', ICONES.lixo, p.status === 'descartado' ? 'Recuperar pedido' : 'Descartar pedido']].filter(Boolean);
+      const a = await janela({titulo: p.nome, corpo: `<div style="display:grid;gap:.45rem;">${acoes.map(([k, ic, t]) => `<button type="button" class="btn ${k === 'desc' && p.status !== 'descartado' ? 'perigo' : 'fantasma'}" data-ac="${k}" style="justify-content:flex-start;"><span class="ic">${ic}</span>${t}</button>`).join('')}</div>`,
+        aoAbrir: ctx => ctx.el.querySelectorAll('[data-ac]').forEach(b => b.onclick = () => ctx.fechar(b.dataset.ac))});
+      if(a === 'cliente') ir('cliente/' + p.cliente_id + (p.oportunidade_id ? '?op=' + p.oportunidade_id : ''));
+      else if(a) card.querySelector(`[data-a-oculto="${a}"]`)?.click();
+    });
   });
 
   if(id){ const alvo = el.querySelector(`.pedido[data-id="${CSS.escape(id)}"]`); if(alvo){ alvo.querySelector('details')?.setAttribute('open', ''); setTimeout(() => alvo.scrollIntoView({behavior: 'smooth', block: 'center'}), 60); } }
@@ -64,7 +71,7 @@ function cartao(p, eu){
     <div class="n">Nº<b>${p.numero}</b></div>
     <div style="min-width:0;">
       <h3>${esc(p.nome)} ${stTag}</h3>
-      <div class="muted" style="font-size:13px;margin-bottom:.5rem;">${dataHoraBR(p.criado_em)} · ${haQuanto(p.criado_em)} · ${esc(p.whatsapp)}${r.marca ? ' · ' + esc(r.marca) : ''}</div>
+      <div class="muted" style="font-size:13px;margin-bottom:.5rem;"><span title="${dataHoraBR(p.criado_em)}">${haQuanto(p.criado_em)}</span> · ${esc(p.whatsapp)}${r.marca ? ' · ' + esc(r.marca) : ''}</div>
       <div class="ideia">“${esc(p.ideia)}”</div>
       ${chips.length ? `<div class="chips">${chips.map(c => `<span class="pill">${esc(c)}</span>`).join('')}</div>` : ''}
       <details><summary>Ver todas as respostas</summary>
@@ -74,11 +81,8 @@ function cartao(p, eu){
     </div>
     <div class="acoes">
       ${w ? `<a class="btn verde peq" data-a="whats" target="_blank" rel="noopener" href="${w}"><span class="ic">${ICONES.whats}</span>Responder</a>` : ''}
-      ${p.cliente_id ? `<a class="btn linha peq" href="#/cliente/${p.cliente_id}${p.oportunidade_id ? '?op=' + p.oportunidade_id : ''}">Abrir cliente</a>` : ''}
-      ${p.cliente_id && p.oportunidade_id ? `<button class="btn fantasma peq" data-a="prop" type="button">Criar proposta</button>` : ''}
-      ${p.cliente_id ? `<button class="btn fantasma peq" data-a="tarefa" type="button">Agendar retorno</button>` : ''}
-      <button class="btn fantasma peq" data-a="lido" type="button">${p.status === 'respondido' ? 'Reabrir' : 'Marcar respondido'}</button>
-      <button class="btn ${p.status === 'descartado' ? 'linha' : 'perigo'} peq" data-a="desc" type="button">${p.status === 'descartado' ? 'Recuperar' : 'Descartar'}</button>
+      <button class="btn fantasma peq" data-a="mais" type="button" aria-label="Mais ações">Mais ações</button>
+      <span hidden>${p.cliente_id && p.oportunidade_id ? '<button data-a="prop" data-a-oculto="prop"></button>' : ''}${p.cliente_id ? '<button data-a="tarefa" data-a-oculto="tarefa"></button>' : ''}<button data-a="lido" data-a-oculto="lido"></button><button data-a="desc" data-a-oculto="desc"></button></span>
     </div>
   </article>`;
 }

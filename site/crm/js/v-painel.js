@@ -1,78 +1,88 @@
-// Painel: o mês em números + o que fazer agora
-import {sb, T, q, oportunidades, tarefasAbertas} from './db.js';
-import {esc, brl, brlCurto, brlC, ETAPAS, quando, diaChave, hojeChave, addDias, whatsLink, haQuanto, dataBR, aviso, primeiroNome, mesChave, mesNome, mesLimites, somaMes, rot, AREAS} from './util.js';
+// Painel: só o essencial, em forma de atalho para agir
+import {q, T, config, tarefasAbertas} from './db.js';
+import {esc, brlC, brlCurto, quando, diaChave, hojeChave, whatsLink, haQuanto, aviso, traduzErro, primeiroNome, mesChave, mesLimites, rot, AREAS} from './util.js';
 import {ICONES} from './icones.js';
 import {ir, recarregar, atualizarContador} from './app.js';
 
-export async function render(el, {mes}){
-  const k = /^\d{4}-\d{2}$/.test(mes || '') ? mes : mesChave();
-  const [ini, fim] = mesLimites(k);
-  const noMes = d => d && diaChave(d) >= ini && diaChave(d) < fim;
-
-  const [ops, tarefas, props, pedidos, lancs, saldos] = await Promise.all([
-    oportunidades(), tarefasAbertas(),
-    q.lista(T.propostas, 'id,numero,status,total,enviada_em,titulo,cliente_id,cliente:rumeyart_clientes(nome,whatsapp)', x => x.in('status', ['enviada', 'negociacao']).order('enviada_em')),
-    q.lista(T.pedidos, 'id,numero,nome,ideia,status,criado_em,cliente_id', x => x.order('criado_em', {ascending: false}).limit(6)),
-    q.lista(T.lanc, 'tipo,valor_centavos,status,data', x => x.in('tipo', ['receita', 'despesa']).gte('data', ini).lt('data', fim)),
-    q.lista(T.saldos, 'saldo_centavos,arquivada')
+export async function render(el){
+  const hoje = hojeChave(), [ini, fim] = mesLimites(mesChave());
+  const [tarefas, pedidos, props, receber, saldos, ops, cfg] = await Promise.all([
+    tarefasAbertas(),
+    q.lista(T.pedidos, 'id,numero,nome,whatsapp,ideia,status,criado_em,cliente_id,oportunidade_id', x => x.in('status', ['novo', 'lido']).order('criado_em', {ascending: false}).limit(20)),
+    q.lista(T.propostas, 'id,status,enviada_em', x => x.in('status', ['enviada', 'negociacao'])),
+    q.lista(T.lanc, 'valor_centavos,data', x => x.eq('tipo', 'receita').eq('status', 'pendente').lt('data', fim)),
+    q.lista(T.saldos, 'saldo_centavos,arquivada'),
+    q.lista(T.oport, 'valor,etapa,fechado_em', x => x.eq('arquivado', false).in('etapa', ['proposta', 'negociacao', 'fechado', 'entregue'])),
+    config()
   ]);
 
-  const novosSite = pedidos.filter(p => p.status === 'novo');
-  const emNeg = ops.filter(o => ['proposta', 'negociacao'].includes(o.etapa));
-  const fechadas = ops.filter(o => ['fechado', 'entregue'].includes(o.etapa) && noMes(o.fechado_em));
-  const soma = l => l.reduce((s, o) => s + (Number(o.valor) || 0), 0);
-  const recebido = lancs.filter(l => l.tipo === 'receita' && l.status === 'pago').reduce((s, l) => s + Number(l.valor_centavos), 0);
-  const aReceber = lancs.filter(l => l.tipo === 'receita' && l.status === 'pendente').reduce((s, l) => s + Number(l.valor_centavos), 0);
-  const gasto = lancs.filter(l => l.tipo === 'despesa' && l.status === 'pago').reduce((s, l) => s + Number(l.valor_centavos), 0);
-  const saldo = saldos.filter(s => !s.arquivada).reduce((s, c) => s + Number(c.saldo_centavos), 0);
+  const novos = pedidos.filter(p => p.status === 'novo');
+  const atras = tarefas.filter(t => diaChave(t.vence_em) < hoje), deHoje = tarefas.filter(t => diaChave(t.vence_em) === hoje);
+  const semRetorno = props.filter(p => p.status === 'enviada' && p.enviada_em && Date.now() - new Date(p.enviada_em) > 3 * 86400000);
+  const vencidos = receber.filter(l => l.data < hoje);
+  const aReceber = receber.reduce((s, l) => s + Number(l.valor_centavos), 0);
+  const saldo = saldos.filter(c => !c.arquivada).reduce((s, c) => s + Number(c.saldo_centavos), 0);
+  const emNeg = ops.filter(o => ['proposta', 'negociacao'].includes(o.etapa)).reduce((s, o) => s + Number(o.valor || 0), 0);
+  const fechado = ops.filter(o => o.fechado_em && diaChave(o.fechado_em) >= ini && diaChave(o.fechado_em) < fim).reduce((s, o) => s + Number(o.valor || 0), 0);
+  const eu = primeiroNome(cfg?.empresa?.responsavel) || '';
+  const h = new Date().getHours(), saud = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 
-  const hoje = hojeChave();
-  const atras = tarefas.filter(t => diaChave(t.vence_em) < hoje);
-  const deHoje = tarefas.filter(t => diaChave(t.vence_em) === hoje);
-  const proximas = tarefas.filter(t => diaChave(t.vence_em) > hoje && new Date(t.vence_em) < addDias(new Date(), 8));
-  const semRetorno = props.filter(p => p.status === 'enviada' && p.enviada_em && (Date.now() - new Date(p.enviada_em)) > 3 * 86400000);
-  const construindo = ops.filter(o => o.etapa === 'fechado').sort((a, b) => String(a.entrega_prevista || '9').localeCompare(String(b.entrega_prevista || '9')));
-  const porEtapa = Object.fromEntries(ETAPAS.map(([e]) => [e, ops.filter(o => o.etapa === e).length]));
-  const agir = atras.length + deHoje.length;
-  const meses = [...Array(12)].map((_, i) => somaMes(mesChave(), -i));
-  const saud = (() => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; })();
+  const atalhos = [
+    {k: 'pedidos', href: '#/pedidos?f=novo', n: novos.length, rot: 'Responder ideias', sub: novos.length ? `a mais recente ${haQuanto(novos[0].criado_em)}` : 'nenhuma ideia esperando', c: 'var(--laranja)'},
+    {k: 'tarefas', href: '#/tarefas', n: atras.length + deHoje.length, rot: 'Tarefas de hoje', sub: atras.length ? `${atras.length} ${atras.length === 1 ? 'atrasada' : 'atrasadas'}` : deHoje.length ? 'no prazo' : 'agenda livre', c: 'var(--azul)', alerta: atras.length > 0},
+    {k: 'propostas', href: '#/propostas?status=abertas', n: semRetorno.length, rot: 'Cobrar propostas', sub: semRetorno.length ? 'enviadas há mais de 3 dias' : `${props.length} em aberto`, c: 'var(--ameixa)'},
+    {k: 'receita', href: '#/financeiro?aba=lancamentos', n: receber.length, valor: aReceber, rot: 'Receber este mês', sub: vencidos.length ? `${vencidos.length} ${vencidos.length === 1 ? 'vencido' : 'vencidos'}` : receber.length ? `${receber.length} ${receber.length === 1 ? 'parcela' : 'parcelas'}` : 'nada pendente', c: 'var(--verde)', alerta: vencidos.length > 0}
+  ];
+  const destaque = atalhos.find(a => a.n > 0);
+
+  const agenda = [...atras, ...deHoje];
+  const agendaTit = agenda.length ? 'Para hoje' : 'Próximas tarefas';
+  const lista = agenda.length ? agenda.slice(0, 6) : tarefas.slice(0, 4);
 
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">${saud}</div><h1>O que pede a sua atenção</h1>
-      <div class="dir"><select id="mes" aria-label="Mês" style="width:auto;border-radius:999px;">${meses.map(m => `<option value="${m}" ${m === k ? 'selected' : ''}>${mesNome(m)}</option>`).join('')}</select></div></div>
-    ${novosSite.length ? `<a class="alerta" href="#/pedidos" style="text-decoration:none;color:inherit;"><span class="ic">${ICONES.pedidos}</span><div><b>${novosSite.length} ${novosSite.length === 1 ? 'ideia nova chegou' : 'ideias novas chegaram'} pelo site.</b> Responda enquanto a pessoa ainda está com a ideia quente.</div></a>` : ''}
-    ${agir ? `<div class="alerta"><span class="ic">${ICONES.sino}</span><div>Você tem <b>${agir} ${agir === 1 ? 'tarefa' : 'tarefas'}</b> para hoje${atras.length ? ` (${atras.length} ${atras.length === 1 ? 'atrasada' : 'atrasadas'})` : ''}.</div></div>`
-      : `<div class="alerta ok"><span class="ic">${ICONES.ok}</span><div>Nenhuma tarefa pendente para hoje.</div></div>`}
-    <div class="kpis">
-      <a class="kpi destaque" href="#/pedidos"><div class="k"><i></i>Pedidos do site</div><div class="v">${novosSite.length}</div><div class="d">aguardando resposta</div></a>
-      <a class="kpi" href="#/funil" style="--c:var(--laranja)"><div class="k"><i></i>Em negociação</div><div class="v din">${brlCurto(soma(emNeg))}</div><div class="d">${emNeg.length} ${emNeg.length === 1 ? 'projeto' : 'projetos'} com proposta</div></a>
-      <a class="kpi" href="#/funil" style="--c:var(--verde)"><div class="k"><i></i>Fechado no mês</div><div class="v din">${brlCurto(soma(fechadas))}</div><div class="d">${fechadas.length} ${fechadas.length === 1 ? 'projeto' : 'projetos'} em ${mesNome(k).split(' ')[0]}</div></a>
-      <a class="kpi" href="#/financeiro?mes=${k}" style="--c:var(--azul)"><div class="k"><i></i>Recebido no mês</div><div class="v din">${brlCurto(recebido / 100)}</div><div class="d">${aReceber ? `+ ${brlC(aReceber)} a receber` : `gastos: ${brlC(gasto)}`}</div></a>
-      <a class="kpi" href="#/financeiro?aba=contas" style="--c:var(--ameixa)"><div class="k"><i></i>Saldo em contas</div><div class="v din ${saldo < 0 ? 'valor-neg' : ''}">${brlCurto(saldo / 100)}</div><div class="d">todas as contas ativas</div></a>
+    <div class="cab cab-painel"><div><div class="eyebrow">${saud}${eu ? ', ' + esc(eu) : ''}</div><h1>${destaque ? 'O próximo passo está aqui.' : 'Tudo em dia por aqui.'}</h1></div></div>
+
+    <div class="atalhos">${atalhos.map(a => `<a class="atalho ${a === destaque ? 'foco' : ''} ${a.n ? '' : 'zerado'} ${a.alerta ? 'alerta-a' : ''}" href="${a.href}" style="--c:${a.c}">
+      <span class="at-topo"><span class="at-ic">${ICONES[a.k]}</span><span class="at-ir">${ICONES.seta}</span></span>
+      <span class="at-num din">${a.valor !== undefined ? (a.valor ? brlCurto(a.valor / 100) : '—') : (a.n || '—')}</span>
+      <span class="at-rot">${a.rot}</span><span class="at-sub">${a.sub}</span></a>`).join('')}</div>
+
+    <div class="criar-rapido" role="group" aria-label="Criar rapidamente">
+      <span class="eyebrow">Criar</span>
+      ${[['cliente', 'clientes', 'Cliente'], ['proposta', 'propostas', 'Proposta'], ['tarefa', 'tarefas', 'Tarefa'], ['receita', 'receita', 'Receita'], ['despesa', 'despesa', 'Despesa']].map(([k, ic, n]) => `<button type="button" class="chip-acao" data-criar="${k}"><span class="ic">${ICONES[ic]}</span>${n}</button>`).join('')}
     </div>
-    <div class="card"><h3>Funil agora <a class="btn linha peq dir" href="#/funil">Abrir funil</a></h3>
-      <div class="funilbar">${ETAPAS.map(([e, n, c]) => `<a href="#/funil" style="--c:${c}"><b>${porEtapa[e]}</b>${n}</a>`).join('')}</div></div>
-    <div class="cols">
-      <div>
-        <div class="card"><h3>Próximas tarefas <a class="btn linha peq dir" href="#/tarefas">Ver todas</a></h3>
-          ${listaTarefas([...atras, ...deHoje, ...proximas].slice(0, 12), hoje) || '<div class="vazio">Nada agendado para os próximos dias. Que tal marcar um retorno com quem está em negociação?</div>'}</div>
-        <div class="card"><h3>Em construção</h3>
-          ${construindo.length ? construindo.slice(0, 8).map(o => `<div class="item-lista"><div class="tx"><a href="#/cliente/${o.cliente_id}?op=${o.id}"><b>${esc(o.titulo)}</b></a><span>${esc(o.cliente?.nome || '')}${o.entrega_prevista ? ` · entrega prevista ${dataBR(o.entrega_prevista + 'T12:00:00')}` : ''}</span></div><span class="vl">${brl(o.valor)}</span></div>`).join('')
-            : '<div class="vazio">Nenhum projeto em construção agora.</div>'}</div>
-      </div>
-      <div>
-        <div class="card"><h3>Chegou pelo site <a class="btn linha peq dir" href="#/pedidos">Caixa de entrada</a></h3>
-          ${pedidos.length ? pedidos.map(p => `<div class="item-lista"><div class="tx"><a href="#/pedidos?id=${p.id}"><b>${esc(p.nome)}</b></a><span>${esc(String(p.ideia).slice(0, 90))}${String(p.ideia).length > 90 ? '…' : ''}</span></div><span class="tag ${p.status}">${p.status === 'novo' ? 'Novo' : haQuanto(p.criado_em)}</span></div>`).join('')
-            : '<div class="vazio">Quando alguém preencher o formulário do site, a ideia aparece aqui.</div>'}</div>
-        <div class="card"><h3>Propostas sem retorno</h3>
-          ${semRetorno.length ? semRetorno.slice(0, 8).map(p => `<div class="item-lista"><div class="tx"><a href="#/proposta/${p.id}"><b>Nº ${p.numero} · ${esc(p.cliente?.nome)}</b></a><span>${esc(p.titulo || '')} · ${brl(p.total)} · enviada ${haQuanto(p.enviada_em)}</span></div>
-            ${whatsLink(p.cliente?.whatsapp) ? `<a class="btn verde peq" target="_blank" rel="noopener" href="${whatsLink(p.cliente.whatsapp, `Olá, ${primeiroNome(p.cliente.nome)}! Tudo bem? Passando para saber se conseguiu olhar a proposta da Rumëyart. Posso esclarecer alguma coisa?`)}">WhatsApp</a>` : ''}</div>`).join('')
-            : '<div class="vazio">Nenhuma proposta enviada há mais de 3 dias sem resposta.</div>'}</div>
-      </div>
+
+    <div class="painel-duo">
+      <section class="card bloco-p"><h3>${agendaTit}<a class="ver dir" href="#/tarefas">Ver todas</a></h3>
+        ${listaTarefas(lista, hoje) || '<div class="vazio">Nenhuma tarefa marcada. Quando você agenda um retorno, ele aparece aqui.</div>'}</section>
+      <section class="card bloco-p"><h3>Ideias do site<a class="ver dir" href="#/pedidos">Caixa de entrada</a></h3>
+        ${pedidos.length ? pedidos.slice(0, 4).map(p => { const w = whatsLink(p.whatsapp, `Olá, ${primeiroNome(p.nome)}! Aqui é ${eu || 'a Rumëyart'}, da Rumëyart. Recebi a sua ideia e quero entender melhor. Podemos conversar esta semana?`);
+          return `<div class="ideia-l ${p.status}"><a class="tx" href="#/pedidos?id=${p.id}"><b>${esc(p.nome)}${p.status === 'novo' ? ' <span class="tag novo">Novo</span>' : ''}</b><span>${esc(String(p.ideia).slice(0, 88))}${String(p.ideia).length > 88 ? '…' : ''}</span></a>
+            ${w ? `<a class="wpp" href="${w}" target="_blank" rel="noopener" data-resp="${p.id}" title="Responder no WhatsApp" aria-label="Responder ${esc(p.nome)} no WhatsApp">${ICONES.whats}</a>` : ''}</div>`; }).join('')
+          : '<div class="vazio">Quando alguém preencher o formulário do site, a ideia aparece aqui.</div>'}</section>
+    </div>
+
+    <div class="faixa-num">
+      <a href="#/funil"><span>Em negociação</span><b class="din">${brlCurto(emNeg)}</b></a>
+      <a href="#/funil"><span>Fechado no mês</span><b class="din">${brlCurto(fechado)}</b></a>
+      <a href="#/financeiro?aba=contas"><span>Saldo em contas</span><b class="din ${saldo < 0 ? 'valor-neg' : ''}">${brlCurto(saldo / 100)}</b></a>
     </div>`;
 
-  el.querySelector('#mes').onchange = e => ir('painel?mes=' + e.target.value);
   ligarTarefas(el);
+  el.querySelectorAll('[data-resp]').forEach(a => a.addEventListener('click', () => {
+    const p = pedidos.find(x => x.id === a.dataset.resp); if(!p || p.status === 'respondido') return;
+    q.altera(T.pedidos, p.id, {status: 'respondido'}).then(() => { atualizarContador(); if(p.cliente_id) q.cria(T.hist, {cliente_id: p.cliente_id, oportunidade_id: p.oportunidade_id, tipo: 'contato', texto: `Respondeu o pedido nº ${p.numero} pelo WhatsApp.`}).catch(() => {}); }).catch(() => {});
+  }));
+  el.querySelectorAll('[data-criar]').forEach(b => b.addEventListener('click', async () => {
+    const k = b.dataset.criar;
+    try{
+      const forms = await import('./forms.js');
+      if(k === 'cliente'){ const c = await forms.cliente(); if(c) ir('cliente/' + c.id); }
+      if(k === 'proposta'){ const p = await forms.novaProposta({}); if(p) ir('proposta/' + p.id); }
+      if(k === 'tarefa'){ if(await forms.tarefa({})){ aviso('Tarefa criada.'); recarregar(); } }
+      if(k === 'receita' || k === 'despesa'){ const {lancamento} = await import('./v-financeiro.js'); if(await lancamento({tipo: k})){ aviso('Lançamento salvo.'); recarregar(); } }
+    }catch(e){ aviso(traduzErro(e)); }
+  }));
 }
 
 export function listaTarefas(ts, hoje = hojeChave()){
@@ -82,7 +92,7 @@ export function listaTarefas(ts, hoje = hojeChave()){
     const w = whatsLink(t.cliente?.whatsapp);
     return `<div class="tarefa ${est}" data-t="${t.id}"><input type="checkbox" aria-label="Concluir: ${esc(t.titulo)}">
       <div class="tx"><b>${esc(t.titulo)}</b>
-        <span class="meta"><span class="pill quando">${quando(t.vence_em)}</span><span class="area-tag ${t.area}">${rot(AREAS, t.area)}</span>${t.cliente?.nome ? `<a href="#/cliente/${t.cliente_id}">${esc(t.cliente.nome)}</a>` : ''}${t.oportunidade ? `<span>${esc(t.oportunidade.titulo)}</span>` : ''}</span></div>
+        <span class="meta"><span class="pill quando">${quando(t.vence_em)}</span><span class="area-tag ${t.area}">${rot(AREAS, t.area)}</span>${t.cliente?.nome ? `<a href="#/cliente/${t.cliente_id}">${esc(t.cliente.nome)}</a>` : ''}${t.oportunidade ? `<span class="op">${esc(t.oportunidade.titulo)}</span>` : ''}</span></div>
       <button type="button" class="btn fantasma peq" data-editar-t="${t.id}" aria-label="Editar tarefa" title="Editar" style="min-height:34px;width:34px;padding:0;"><span class="ic">${ICONES.editar}</span></button>
       ${w ? `<a class="wpp" target="_blank" rel="noopener" href="${w}" title="Abrir WhatsApp" aria-label="Abrir WhatsApp">${ICONES.whats}</a>` : ''}</div>`;
   }).join('');

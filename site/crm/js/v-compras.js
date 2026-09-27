@@ -10,9 +10,9 @@ const PRIOR = [['urgente', 'Urgente'], ['normal', 'Normal'], ['baixa', 'Baixa']]
 export async function render(el, {aba}){
   const a = ABAS.some(x => x[0] === aba) ? aba : 'lista';
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Operação</div><h1>Compras</h1>
+    <div class="cab"><h1>Compras</h1>
       <div class="dir"><button class="btn prim" id="novo"><span class="ic">${ICONES.mais_novo}</span>${a === 'lista' ? 'Item' : a === 'recursos' ? 'Recurso' : 'Fornecedor'}</button></div>
-      <div class="sub">Ferramentas, assinaturas, domínios e equipamentos: o que falta comprar, quanto custa em cada lugar e quem vende.</div></div>
+</div>
     <nav class="abas">${ABAS.map(([k, n, ic]) => `<a href="#/compras?aba=${k}" class="${k === a ? 'on' : ''}"><span class="ic">${ICONES[ic]}</span>${n}</a>`).join('')}</nav>
     <div id="cp"><div class="carregando">Carregando…</div></div>`;
   const alvo = el.querySelector('#cp');
@@ -29,17 +29,14 @@ async function lista(el){
   const previsto = abertos.reduce((s, i) => s + Number(i.preco_estimado_centavos || 0) * Number(i.quantidade || 1), 0);
   const hoje = hojeChave();
   el.innerHTML = `
-    <div class="kpis"><div class="kpi" style="--c:var(--laranja)"><div class="k"><i></i>A comprar</div><div class="v">${abertos.length}</div><div class="d">${abertos.filter(i => i.prioridade === 'urgente').length} urgentes</div></div>
-      <div class="kpi" style="--c:var(--azul)"><div class="k"><i></i>Estimado</div><div class="v din">${brlC(previsto)}</div><div class="d">soma dos itens com preço</div></div></div>
-    <div class="cols">
-      <div class="card"><h3>A comprar</h3>
+    <div class="col-unica">
+      <div class="card limpo"><h3>A comprar${previsto ? `<span class="muted dir" style="font:500 13px var(--f-corpo);">estimado ${brlC(previsto)}</span>` : ''}</h3>
         ${abertos.length ? abertos.map(i => `<div class="item-lista" data-id="${i.id}"><input type="checkbox" data-comprar="${i.id}" aria-label="Marcar como comprado" style="width:20px;height:20px;">
           <div class="tx"><b>${esc(i.descricao)}${Number(i.quantidade) !== 1 ? ` <span class="pill">${Number(i.quantidade)} ${esc(i.unidade || '')}</span>` : ''}</b>
             <span>${[i.prioridade !== 'normal' ? `<span class="tag ${i.prioridade === 'urgente' ? 'urgente' : 'expirada'}">${i.prioridade}</span>` : '', i.precisa_ate ? `<span class="${i.precisa_ate < hoje ? 'valor-neg' : ''}">até ${dataCurta(i.precisa_ate)}</span>` : '', i.fornecedor ? esc(i.fornecedor.nome) : '', i.oportunidade ? esc(i.oportunidade.titulo) : '', i.link ? `<a href="${esc(i.link)}" target="_blank" rel="noopener" data-stop>link ↗</a>` : ''].filter(Boolean).join(' · ')}</span></div>
           ${i.preco_estimado_centavos ? `<span class="vl">${brlC(i.preco_estimado_centavos * Number(i.quantidade || 1))}</span>` : ''}
           <button class="btn fantasma peq" data-editar="${i.id}">Editar</button></div>`).join('') : '<div class="vazio">Nada para comprar agora.</div>'}</div>
-      <div class="card"><h3>Comprados recentemente</h3>
-        ${feitos.length ? feitos.map(i => `<div class="item-lista"><div class="tx"><b style="${i.status === 'cancelado' ? 'text-decoration:line-through;' : ''}">${esc(i.descricao)}</b><span><span class="tag ${i.status}">${i.status === 'comprado' ? 'Comprado' : 'Cancelado'}</span>${i.comprado_em ? ' ' + dataBR(i.comprado_em) : ''}${i.lancamento_id ? ' · no financeiro' : ''}</span></div><button class="btn fantasma peq" data-editar="${i.id}">Ver</button></div>`).join('') : '<div class="vazio">Nada ainda.</div>'}</div>
+      ${feitos.length ? `<details class="mais-itens"><summary>Comprados recentemente · ${feitos.length}</summary><div class="card limpo">${feitos.map(i => `<div class="item-lista"><div class="tx"><b style="${i.status === 'cancelado' ? 'text-decoration:line-through;' : ''}">${esc(i.descricao)}</b><span><span class="tag ${i.status}">${i.status === 'comprado' ? 'Comprado' : 'Cancelado'}</span>${i.comprado_em ? ' ' + dataBR(i.comprado_em) : ''}${i.lancamento_id ? ' · no financeiro' : ''}</span></div><button class="btn fantasma peq" data-editar="${i.id}">Ver</button></div>`).join('')}</div></details>` : ''}
     </div>`;
   el.querySelectorAll('[data-editar]').forEach(b => b.onclick = async () => { const r = await itemCompra({existente: itens.find(i => i.id === b.dataset.editar)}); if(r){ aviso(r === 'apagado' ? 'Item apagado.' : 'Item salvo.'); recarregar(); } });
   el.querySelectorAll('[data-comprar]').forEach(cb => cb.onchange = async () => { const r = await comprar(itens.find(i => i.id === cb.dataset.comprar)); if(r) recarregar(); else cb.checked = false; });
@@ -71,7 +68,7 @@ export async function itemCompra({existente}){
   const [rs, fs, ops] = await Promise.all([q.lista(T.recursos, '*', x => x.eq('ativo', true).order('nome')), cFornecedores(), q.lista(T.oport, 'id,titulo,cliente:rumeyart_clientes(nome)', x => x.eq('arquivado', false).in('etapa', ['fechado', 'negociacao', 'proposta', 'prototipo']).order('atualizado_em', {ascending: false}))]);
   const x = existente || {quantidade: 1, prioridade: 'normal', status: 'a_comprar'};
   return janela({titulo: existente ? 'Item de compra' : 'Adicionar à lista de compras', corpo: `
-    <div class="campo"><label class="rot" for="i_rec">Recurso cadastrado <small>(opcional)</small></label><select id="i_rec"><option value="">— item avulso —</option>${rs.map(r => `<option value="${r.id}" data-u="${esc(r.unidade)}" ${r.id === x.recurso_id ? 'selected' : ''}>${esc(r.nome)}</option>`).join('')}</select></div>
+    <div class="campo"><label class="rot" for="i_rec">Recurso cadastrado <small>(opcional)</small></label><select id="i_rec" data-add="recurso"><option value="">— item avulso —</option>${rs.map(r => `<option value="${r.id}" data-u="${esc(r.unidade)}" ${r.id === x.recurso_id ? 'selected' : ''}>${esc(r.nome)}</option>`).join('')}</select></div>
     <div class="campo"><label class="rot" for="i_desc">O que comprar *</label><input type="text" id="i_desc" value="${esc(x.descricao)}"></div>
     <div class="grade3"><div class="campo"><label class="rot" for="i_q">Quantidade</label><input type="number" id="i_q" min="0.001" step="any" value="${Number(x.quantidade) || 1}"></div>
       <div class="campo"><label class="rot" for="i_u">Unidade</label><input type="text" id="i_u" value="${esc(x.unidade)}" placeholder="un, mês, ano"></div>
@@ -79,7 +76,7 @@ export async function itemCompra({existente}){
     <div class="grade3"><div class="campo"><label class="rot" for="i_pr">Prioridade</label><select id="i_pr">${PRIOR.map(([k, n]) => `<option value="${k}" ${k === x.prioridade ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="campo"><label class="rot" for="i_ate">Precisa até</label><input type="date" id="i_ate" value="${x.precisa_ate || ''}"></div>
       <div class="campo"><label class="rot" for="i_st">Situação</label><select id="i_st"><option value="a_comprar" ${x.status === 'a_comprar' ? 'selected' : ''}>A comprar</option><option value="comprado" ${x.status === 'comprado' ? 'selected' : ''}>Comprado</option><option value="cancelado" ${x.status === 'cancelado' ? 'selected' : ''}>Cancelado</option></select></div></div>
-    <div class="grade2"><div class="campo"><label class="rot" for="i_f">Fornecedor</label><select id="i_f"><option value="">—</option>${fs.filter(f => f.ativo || f.id === x.fornecedor_id).map(f => `<option value="${f.id}" ${f.id === x.fornecedor_id ? 'selected' : ''}>${esc(f.nome)}</option>`).join('')}</select></div>
+    <div class="grade2"><div class="campo"><label class="rot" for="i_f">Fornecedor</label><select id="i_f" data-add="fornecedor"><option value="">—</option>${fs.filter(f => f.ativo || f.id === x.fornecedor_id).map(f => `<option value="${f.id}" ${f.id === x.fornecedor_id ? 'selected' : ''}>${esc(f.nome)}</option>`).join('')}</select></div>
       <div class="campo"><label class="rot" for="i_op">Para o projeto</label><select id="i_op"><option value="">— uso geral —</option>${ops.map(o => `<option value="${o.id}" ${o.id === x.oportunidade_id ? 'selected' : ''}>${esc(o.titulo)} · ${esc(o.cliente?.nome || '')}</option>`).join('')}</select></div></div>
     <div class="campo"><label class="rot" for="i_l">Link</label><input type="url" id="i_l" value="${esc(x.link)}" placeholder="https://"></div>
     <div class="campo"><label class="rot" for="i_o">Observações</label><textarea id="i_o" style="min-height:60px;">${esc(x.observacoes)}</textarea></div>`,
@@ -122,7 +119,7 @@ async function cotacao(r){
     <div class="grade3"><div class="campo"><label class="rot" for="p_v">Preço (R$)</label><input type="text" inputmode="decimal" id="p_v" placeholder="0,00"></div>
       <div class="campo"><label class="rot" for="p_q">Pela quantidade de</label><input type="number" id="p_q" min="0.001" step="any" value="1"></div>
       <div class="campo"><label class="rot" for="p_d">Data</label><input type="date" id="p_d" value="${hojeChave()}"></div></div>
-    <div class="campo"><label class="rot" for="p_f">Fornecedor</label><select id="p_f"><option value="">—</option>${fs.filter(f => f.ativo).map(f => `<option value="${f.id}">${esc(f.nome)}</option>`).join('')}</select></div>
+    <div class="campo"><label class="rot" for="p_f">Fornecedor</label><select id="p_f" data-add="fornecedor"><option value="">—</option>${fs.filter(f => f.ativo).map(f => `<option value="${f.id}">${esc(f.nome)}</option>`).join('')}</select></div>
     <div class="campo"><label class="rot" for="p_l">Link</label><input type="url" id="p_l" placeholder="https://"></div>
     <div class="campo"><label class="rot" for="p_o">Observação</label><input type="text" id="p_o" placeholder="Ex.: preço anual à vista"></div>`,
     botoes: [{texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: ctx => {

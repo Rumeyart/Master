@@ -15,11 +15,11 @@ export async function render(el, {mostrar}){
   const hoje = hojeChave();
 
   el.innerHTML = `
-    <div class="cab"><div class="eyebrow">Comercial</div><h1>Funil</h1>
+    <div class="cab"><h1>Funil</h1>
       <div class="dir">
-        <input type="search" id="fBusca" placeholder="Filtrar cliente ou projeto" style="width:15rem;border-radius:999px;">
+        <input type="search" id="fBusca" placeholder="Filtrar" style="width:13rem;border-radius:999px;">
         <button class="btn prim" id="novaOp"><span class="ic">${ICONES.mais_novo}</span>Oportunidade</button></div>
-      <div class="sub">${abertas.length} em aberto · ${brl(abertas.reduce((s, o) => s + Number(o.valor || 0), 0))} em potencial. Arraste o cartão para mudar de etapa${'ontouchstart' in window ? ' (ou toque em ⇄)' : ''}. ${todas ? '<a href="#/funil">Mostrar só recentes</a>' : 'Entregues e perdidos: últimos 60 dias · <a href="#/funil?mostrar=todas">ver todos</a>'}</div></div>
+      <div class="sub">${abertas.length} em aberto · ${brl(abertas.reduce((s, o) => s + Number(o.valor || 0), 0))} · ${todas ? '<a href="#/funil">só recentes</a>' : '<a href="#/funil?mostrar=todas">ver antigos</a>'}</div></div>
     <div class="kanban" id="kanban">${ETAPAS.map(([k, n, c]) => {
       const l = visiveis.filter(o => o.etapa === k);
       return `<div class="coluna" data-etapa="${k}" style="--c:${c}"><div class="ch"><div class="t">${n}<span class="q">${l.length}</span></div><div class="s">${brlCurto(l.reduce((s, o) => s + Number(o.valor || 0), 0))}</div></div>
@@ -68,8 +68,6 @@ function cartao(o, t, hoje){
     <div class="nm">${esc(o.cliente?.nome || '—')}</div>
     <div class="pj">${esc(o.titulo)}</div>
     ${Number(o.valor) || Number(o.mensal) ? `<div class="vl">${Number(o.valor) ? brl(o.valor) : ''}${Number(o.mensal) ? `${Number(o.valor) ? ' + ' : ''}${brl(o.mensal)}/mês` : ''}</div>` : ''}
-    <div class="mt">${o.origem === 'site' ? '<span style="color:var(--laranja-2);">● veio pelo site</span>' : ''}<span>Último contato: ${haQuanto(o.ultimo_contato_em || o.atualizado_em)}</span>${acao ? `<span class="${atrasada ? 'atras' : ''}">→ ${acao}</span>` : ''}
-      ${o.etapa === 'fechado' && o.entrega_prevista ? `<span>Entrega prevista: ${dataBR(o.entrega_prevista + 'T12:00:00')}</span>` : ''}
-      ${o.etapa === 'perdido' && o.motivo_perda ? `<span>Motivo: ${esc(o.motivo_perda)}</span>` : ''}</div>
+    ${acao || (o.etapa === 'fechado' && o.entrega_prevista) ? `<div class="mt">${acao ? `<span class="${atrasada ? 'atras' : ''}">→ ${acao}</span>` : `<span>Entrega: ${dataBR(o.entrega_prevista + 'T12:00:00')}</span>`}</div>` : ''}
   </div>`;
 }
