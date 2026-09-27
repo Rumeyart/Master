@@ -8,6 +8,7 @@ import * as forms from './forms.js';
 import {ICONES} from './icones.js';
 import {iniciarAparencia} from './aparencia.js';
 import * as pwa from './pwa.js';
+import {contarNotificacoes} from './notif.js';
 
 iniciarAparencia();
 setJanelaHook(combosEm);
@@ -28,9 +29,10 @@ const VISTAS = {
   propostas: () => import('./v-propostas.js'), proposta: () => import('./v-proposta.js'),
   contratos: () => import('./v-contratos.js'), contrato: () => import('./v-contrato.js'),
   tarefas: () => import('./v-tarefas.js'), administrativo: () => import('./v-admin.js'), servicos: () => import('./v-servicos.js'), compras: () => import('./v-compras.js'),
-  financeiro: () => import('./v-financeiro.js'), config: () => import('./v-config.js'), busca: () => import('./v-busca.js')
+  financeiro: () => import('./v-financeiro.js'), config: () => import('./v-config.js'), busca: () => import('./v-busca.js'),
+  notificacoes: () => import('./v-notificacoes.js')
 };
-const PAI = {cliente: 'clientes', proposta: 'propostas', contrato: 'contratos', busca: ''};
+const PAI = {cliente: 'clientes', proposta: 'propostas', contrato: 'contratos', busca: '', notificacoes: ''};
 
 export const estado = {usuario: null};
 
@@ -39,6 +41,7 @@ function mostrar(tela){ ['login', 'semacesso', 'app'].forEach(id => $('#' + id).
 // ---------- ícones fixos ----------
 $('#icBusca').outerHTML = ICONES.busca;
 $('#icNovo').innerHTML = ICONES.mais_novo;
+$('#icSino').innerHTML = ICONES.sino;
 $('#btnSair').innerHTML = `<span style="width:18px;height:18px;display:inline-flex">${ICONES.sair}</span>`;
 $('#hoje').textContent = new Date().toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'long'});
 
@@ -106,6 +109,7 @@ function fecharMais(){ $('#sheetMais').classList.remove('on'); $('#sheetMais').s
 function marcarMenu(k){
   const alvo = PAI[k] !== undefined ? PAI[k] : k;
   $$('#menu a, #menuMob a, #maisCorpo a').forEach(a => a.classList.toggle('on', a.dataset.k === alvo));
+  $('#btnSino')?.classList.toggle('on', k === 'notificacoes');
   const noMob = MOBILE.some(([m]) => m === alvo);
   $('#btnMais')?.classList.toggle('on', !noMob && !!alvo);
 }
@@ -118,6 +122,11 @@ export async function atualizarContador(){
     ]);
     const n = {tarefas: t.count || 0, pedidos: p.count || 0};
     $$('[data-contador]').forEach(s => { const v = n[s.dataset.contador]; s.textContent = v || ''; s.classList.toggle('hidden', !v); });
+  }catch(e){}
+  try{
+    const {total} = await contarNotificacoes(estado.usuario?.email);
+    const b = $('#nSino'); b.textContent = total > 9 ? '9+' : total || ''; b.classList.toggle('hidden', !total);
+    $('#btnSino').setAttribute('aria-label', total ? `Notificações: ${total} nova${total > 1 ? 's' : ''}` : 'Notificações');
   }catch(e){}
 }
 

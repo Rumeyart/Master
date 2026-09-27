@@ -67,6 +67,10 @@ Para liberar outra pessoa: CRM → Configurações → Quem acessa o CRM.
 - **Próximos passos com mensagem pronta** — cada passo da lista "O que fazer" (responder pedido, enviar proposta,
   cobrar entrada, pedir depoimento…) tem um texto para o cliente, já com o nome dele e em linguagem neutra.
   Aparece ao criar a tarefa ("Ver e enviar") e nos botões de WhatsApp. Edite em Configurações → Próximos passos.
+- **Notificações** — sino no topo com o número de coisas novas. A tela mostra as novidades do CRM (bem curtas, por data)
+  e a atividade: tudo o que foi criado, alterado ou apagado, com quem fez e quando. O que acontece junto vira uma linha só
+  (um pedido do site com cliente, projeto e tarefa; uma importação de extrato). O que você mesmo faz aparece, mas não conta no sino.
+  A cada entrega nova, acrescente os itens no topo de `site/crm/js/novidades.js`.
 - **Serviços** — catálogo que alimenta as propostas.
 - **Compras** — lista de compras, recursos com cotações (melhor preço), fornecedores.
 - **Financeiro** — visão do mês, lançamentos (receita, despesa, transferência, pagamento de fatura),

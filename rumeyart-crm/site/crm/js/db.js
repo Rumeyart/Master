@@ -9,7 +9,7 @@ export const T = {
   fornecedores: 'rumeyart_fornecedores', recursos: 'rumeyart_recursos', precos: 'rumeyart_precos', compras: 'rumeyart_compras',
   modelos: 'rumeyart_contrato_modelos', contratos: 'rumeyart_contratos',
   contas: 'rumeyart_fin_contas', cartoes: 'rumeyart_fin_cartoes', categorias: 'rumeyart_fin_categorias', lanc: 'rumeyart_fin_lancamentos',
-  saldos: 'rumeyart_fin_saldos', faturas: 'rumeyart_fin_faturas'
+  saldos: 'rumeyart_fin_saldos', faturas: 'rumeyart_fin_faturas', atividade: 'rumeyart_atividade'
 };
 
 function ok({data, error}){ if(error) throw error; return data; }

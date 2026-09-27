@@ -25,6 +25,7 @@ CRM (/crm, PWA)    ──supabase-js (login e-mail/senha)───────�
 | `fin_contas`, `fin_cartoes`, `fin_categorias`, `fin_lancamentos` | financeiro; views `fin_saldos` e `fin_faturas` |
 | `fornecedores`, `recursos`, `precos`, `compras` | compras e cotações |
 | `push_config`, `push_inscricoes`, `push_fila` | notificações |
+| `atividade` | registro automático (gatilho em clientes, projetos, pedidos, propostas, contratos, tarefas, financeiro, compras, serviços, cofre, configurações e acessos): quem criou, alterou ou apagou o quê. Só leitura pelo app; guarda 180 dias. Do cofre entra só o nome do projeto e quais campos mudaram, nunca login ou senha |
 | `cofre`, `cofre_config`, `cofre_sessoes` | cofre de acessos: sem acesso direto pela API; só pelas funções `rumeyart_cofre_*` (PIN com bcrypt, sessão de 10 min renovada a cada uso, login/senha cifrados com `pgp_sym_encrypt`) |
 
 ### Formulário do site
@@ -44,6 +45,7 @@ grava `id_externo` (FITID do OFX ou data+valor+descrição do CSV) com índice �
 - `util.js` — formatação, datas (fuso de São Paulo), janelas, avisos.
 - `combo.js` + `criadores.js` — listas suspensas abertas para digitação e o "＋ Adicionar" de cada tipo de lista.
 - `passos.js` — lista "O que fazer" com a mensagem pronta de cada passo (linguagem neutra, variáveis `{nome}`, `{projeto}`, `{responsavel}`).
+- `novidades.js` — lista das novidades de cada entrega (a mais nova no topo); `notif.js` conta o que é novo para o sino; `v-notificacoes.js` é a tela.
 - `forms.js` — janelas de cadastro usadas em várias telas (cliente, projeto, tarefa, proposta, mudar etapa).
 - `proposta-doc.js` + `documento.css` — documento A4 da proposta e do contrato e geração do PDF (html2pdf.js).
 - `v-*.js` — uma tela por arquivo.
@@ -51,5 +53,5 @@ grava `id_externo` (FITID do OFX ou data+valor+descrição do CSV) com índice �
 
 ## Migrações
 Já aplicadas no projeto Supabase `uotxnchfvrgpxwimmefd`. Os arquivos em `supabase/migrations`
-servem de registro e para recriar o banco em outro projeto (rodar em ordem 001 → 005; a 003
+servem de registro e para recriar o banco em outro projeto (rodar em ordem 001 → 006; a 003
 precisa das chaves VAPID e do segredo, preenchidos direto na tabela `rumeyart_push_config`).
