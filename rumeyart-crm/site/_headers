@@ -1,0 +1,14 @@
+/crm/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-cache
+
+/crm/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /crm/
+
+/img/*
+  Cache-Control: public, max-age=604800
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
