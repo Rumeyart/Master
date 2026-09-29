@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F5EFE6">
+<title>CRM Rumëyart</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icones/favicon-64.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rumëyart">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="application-name" content="Rumëyart">
+<script>
+  // tema e tamanho escolhidos neste aparelho (antes de pintar, para não piscar)
+  (function(){ try{
+    var t = localStorage.getItem('rmy-tema'), z = parseInt(localStorage.getItem('rmy-zoom') || '100', 10);
+    if(t === 'noite'){ document.documentElement.dataset.tema = 'noite'; document.querySelector('meta[name=theme-color]').content = '#0C1322'; document.querySelector('meta[name=color-scheme]').content = 'dark'; }
+    if(z >= 50 && z <= 150) document.documentElement.style.setProperty('--zoom', z / 100);
+  }catch(e){} })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="crm.css">
+<link rel="stylesheet" href="documento.css">
+</head>
+<body>
+
+<div id="login" class="hidden">
+  <div class="lado">
+    <canvas id="fiosLogin" aria-hidden="true"></canvas>
+    <img class="simb" src="../img/rumeyart-simbolo.png" alt="">
+    <div>
+      <h2>Onde as ideias viram <em>projetos</em> que acontecem.</h2>
+      <p>Pedidos do site, funil, propostas, contratos, tarefas e financeiro da Rumëyart Criação, num só lugar.</p>
+    </div>
+  </div>
+  <div class="form">
+    <div class="card-login">
+      <img class="marca" src="../img/rumeyart-marca.png" alt="Rumëyart Criação">
+      <div class="eyebrow">Área restrita</div>
+      <h1>Entrar no CRM</h1>
+      <form id="loginForm" style="display:flex;flex-direction:column;gap:.2rem;">
+        <div class="campo"><label class="rot" for="lg_email">E-mail</label><input type="email" id="lg_email" autocomplete="username" required></div>
+        <div class="campo"><label class="rot" for="lg_pw">Senha</label><input type="password" id="lg_pw" autocomplete="current-password" required></div>
+        <button class="btn prim" id="lg_btn" type="submit" style="margin-top:1rem;">Entrar</button>
+      </form>
+      <div class="msg" id="lg_msg" role="alert"></div>
+      <button class="link" id="lg_esqueci" type="button" style="align-self:flex-start;">Esqueci minha senha</button>
+    </div>
+  </div>
+</div>
+
+<div id="semacesso" class="hidden">
+  <div class="card" style="max-width:28rem;text-align:center;">
+    <h2 style="margin-bottom:.5rem;">Sem acesso</h2>
+    <p class="muted">O e-mail <b id="sa_email"></b> não está liberado no CRM da Rumëyart.</p>
+    <button class="btn linha" data-sair>Sair</button>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <aside class="lateral">
+    <a class="marca" href="#/painel" aria-label="Painel"><img class="sb" src="../img/rumeyart-simbolo.png" alt=""><img class="wm escura" src="../img/rumeyart-marca.png" alt="Rumëyart Criação"><img class="wm clara" src="../img/rumeyart-marca-clara.png" alt=""></a>
+    <nav id="menu" aria-label="Menu principal"></nav>
+    <div class="pe"><span class="av" id="euAv">R</span><span class="quem" id="eu"></span><button data-sair title="Sair" aria-label="Sair" id="btnSair"></button></div>
+  </aside>
+  <div class="area-app">
+    <header class="topo">
+      <img class="logo-mob" src="../img/rumeyart-simbolo.png" alt="">
+      <form class="busca" id="buscaForm" role="search"><span id="icBusca"></span><input type="search" id="buscaTopo" placeholder="Buscar cliente, pedido, proposta, lançamento…" aria-label="Buscar"></form>
+      <div class="acoes">
+        <span class="hoje" id="hoje"></span>
+        <a class="btn-sino" id="btnSino" href="#/notificacoes" title="Notificações" aria-label="Notificações"><span class="ic" id="icSino"></span><span class="n hidden" id="nSino"></span></a>
+        <button class="btn prim" id="btnNovo" title="Criar novo"><span class="ic" id="icNovo"></span><span class="txt">Novo</span></button>
+      </div>
+    </header>
+    <main id="vista"><div class="carregando">Carregando…</div></main>
+  </div>
+  <nav class="barra-mob" id="menuMob" aria-label="Menu"></nav>
+  <div class="sheet-mais" id="sheetMais" aria-hidden="true"><div class="fundo" data-fechar-mais></div><div class="painel" role="dialog" aria-label="Todos os menus"><div class="puxador"></div><div id="maisCorpo"></div></div></div>
+</div>
+
+<div id="aviso" role="status"><span id="avisoTx"></span><span id="avisoAc"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

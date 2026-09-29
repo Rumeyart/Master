@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rumëyart Criação</title>
+<meta name="description" content="Apps, sistemas, jogos e documentos feitos sob medida a partir da sua ideia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Rumëyart: areia clara como base, laranja e azul do logo como acentos. Identidade de tema único, escolhida de propósito. */
+:root{
+  color-scheme:light;
+  --sand:#F5EFE6;
+  --sand-2:#ECE3D5;
+  --paper:#FBF8F3;
+  --ink:#16213A;          /* azul-marinho do logotipo */
+  --ink-2:#3B465C;
+  --mute:#5C6477;
+  --line:rgba(22,33,58,.16);
+  --line-soft:rgba(22,33,58,.08);
+  --orange:#E0703A;       /* laranja do logo */
+  --orange-deep:#B9531F;
+  --orange-ink:#1C0D05;
+  --plum:#7A4466;         /* transição do logo */
+  --blue:#2566A8;         /* azul do logo, legível sobre areia */
+  --sky:#7CC4F0;          /* azul claro: só sobre fundo escuro */
+  --ok:#2F7D55;
+  --err:#B3401C;
+  --f-display:"Instrument Serif","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --f-body:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Geist Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --gutter:clamp(16px,4vw,56px);
+  --maxw:1240px;
+  --ease:cubic-bezier(.2,.7,.1,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;background:var(--sand)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--sand);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+::selection{background:var(--sky);color:var(--ink)}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:6px}
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.eyebrow b{color:var(--orange-deep);font-weight:500}
+.mark{background:linear-gradient(transparent 58%,rgba(124,196,240,.55) 58%,rgba(124,196,240,.55) 92%,transparent 92%);padding-inline:.06em}
+
+/* ---------- botões ---------- */
+.btn{--bg:transparent;--fg:var(--ink);position:relative;display:inline-flex;align-items:center;gap:12px;border:0;cursor:pointer;text-decoration:none;
+  border-radius:999px;padding:8px 8px 8px 22px;min-height:52px;font-size:15px;font-weight:500;background:var(--bg);color:var(--fg);
+  transition:transform .5s var(--ease),background .3s,box-shadow .4s,color .3s;will-change:transform;isolation:isolate;overflow:hidden}
+.btn .dot{position:relative;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none}
+.btn .dot svg{width:16px;height:16px;transition:transform .5s var(--ease)}
+.btn:hover .dot svg{transform:translateX(3px) rotate(-45deg)}
+.btn-primary{--bg:var(--orange);--fg:var(--orange-ink);box-shadow:0 18px 40px -20px rgba(224,112,58,.8)}
+.btn-primary .dot{background:var(--ink);color:var(--sand)}
+.btn-primary::before{content:"";position:absolute;z-index:-1;right:8px;top:50%;width:36px;height:36px;margin-top:-18px;border-radius:50%;background:#EE9563;transform:scale(0);transition:transform .6s var(--ease)}
+.btn-primary:hover::before{transform:scale(14)}
+.btn-primary:hover{box-shadow:0 0 0 6px rgba(224,112,58,.16),0 22px 50px -18px rgba(224,112,58,.8)}
+.btn-ghost{--fg:var(--ink);padding:8px 22px;box-shadow:inset 0 0 0 1px var(--line)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1px var(--ink);background:var(--paper)}
+.btn-sm{min-height:44px;padding:5px 5px 5px 16px;font-size:14px;gap:10px}
+.btn-sm .dot{width:34px;height:34px}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;left:0;right:0;top:0;z-index:50;padding:calc(env(safe-area-inset-top,0px) + 14px) var(--gutter) 0;pointer-events:none}
+.nav-in{pointer-events:auto;max-width:1180px;min-height:84px;margin-inline:auto;display:flex;align-items:center;gap:22px;padding:10px 10px 10px 24px;border-radius:999px;
+  background:rgba(251,248,243,.82);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:inset 0 0 0 1px var(--line-soft),0 16px 40px -26px rgba(22,33,58,.35)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;flex:none}
+.brand .sym{width:58px;height:auto}
+.brand .wm{height:52px;width:auto}
+.nav-links{display:flex;gap:4px;margin-left:auto}
+.nav-links a{font-size:15px;color:var(--ink-2);text-decoration:none;padding:10px 14px;border-radius:999px;transition:color .2s,background .2s}
+.nav-links a:hover{color:var(--ink);background:var(--sand-2)}
+@media (max-width:920px){.nav-links{display:none}.nav .btn{margin-left:auto}}
+@media (max-width:520px){.nav-in{min-height:66px;padding:8px 8px 8px 16px;gap:10px}.brand .sym{display:none}.brand .wm{height:40px}.nav-cta-long{display:none}}
+@media (min-width:521px){.nav-cta-short{display:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding-block:clamp(150px,19vh,200px) clamp(56px,8vh,90px);overflow:hidden}
+#fios{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center}
+.hero h1{font-size:clamp(46px,6.8vw,100px);line-height:.98;margin-top:22px}
+.hero h1 em{color:var(--blue)}
+.hero .lede{max-width:54ch;margin-top:26px;font-size:clamp(16px,1.3vw,18.5px);color:var(--ink-2);line-height:1.6}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.logo-wrap{position:relative;width:100%;max-width:560px;justify-self:end;will-change:transform}
+.logo-wrap img{position:relative;display:block;width:100%;height:auto;animation:float 9s ease-in-out infinite}
+.logo-wrap .glow{position:absolute;left:50%;top:50.5%;width:34%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(224,112,58,.35),rgba(224,112,58,0) 65%);animation:pulse 4.5s ease-in-out infinite}
+.logo-wrap .ring{position:absolute;left:50%;top:50.5%;width:74%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(37,102,168,.22);animation:spin 70s linear infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.9)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@media (max-width:860px){.hero-grid{grid-template-columns:1fr}.logo-wrap{max-width:320px;justify-self:start;order:-1;margin-bottom:-8px}}
+
+/* faixa */
+.band{border-block:1px solid var(--line-soft);overflow:hidden;padding-block:18px;background:var(--paper)}
+.band-track{display:flex;gap:44px;white-space:nowrap;width:max-content;will-change:transform}
+.band-track span{font-family:var(--f-display);font-size:clamp(24px,3vw,38px);color:var(--ink-2);display:inline-flex;align-items:center;gap:44px}
+.band-track span::after{content:"";width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--blue)}
+.band-track span:nth-child(3n)::after{box-shadow:none;background:var(--orange)}
+
+/* ---------- ambiente (círculo que cresce) ---------- */
+.expand{position:relative;height:230vh;height:230svh}
+.expand-sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:grid;place-items:center}
+.circle{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:var(--ink);transform:scale(var(--s,40));will-change:transform}
+.dot-cap{position:absolute;left:50%;top:calc(50% + 40px);transform:translateX(-50%);font-family:var(--f-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);opacity:var(--dc,1);white-space:nowrap}
+.expand-copy{position:relative;z-index:1;color:var(--sand);max-width:1120px;width:100%;padding-inline:var(--gutter);opacity:var(--co,1);transform:translateY(calc((1 - var(--co,1)) * 30px))}
+.expand-copy .eyebrow{color:var(--sky)}
+.expand-copy h2{font-size:clamp(34px,5.2vw,74px);line-height:1.03;margin-top:18px;max-width:18ch}
+.expand-copy h2 em{color:var(--sky)}
+.pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(18px,3vw,44px);margin-top:44px}
+.pillar{border-top:1px solid rgba(245,239,230,.22);padding-top:18px}
+.pillar b{display:flex;align-items:center;gap:10px;font-weight:500;font-size:15px;color:var(--sky);letter-spacing:.01em}
+.pillar b::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.pillar p{margin-top:8px;font-size:15px;line-height:1.6;color:rgba(245,239,230,.82)}
+.expand-copy .sig{margin-top:36px;display:flex;align-items:center;gap:14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,239,230,.7)}
+.expand-copy .sig::before{content:"";width:48px;height:1px;background:currentColor}
+@media (max-width:760px){.pillars{grid-template-columns:1fr;gap:14px;margin-top:26px}.pillar p{font-size:14px}}
+
+/* ---------- possibilidades ---------- */
+.poss{padding-block:clamp(90px,14vh,150px) 40px}
+.sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:24px;align-items:end;margin-bottom:clamp(40px,7vh,80px)}
+.sec-head h2{font-size:clamp(38px,5.2vw,72px);line-height:1}
+.sec-head p{color:var(--ink-2);max-width:46ch;justify-self:end}
+@media (max-width:760px){.sec-head{grid-template-columns:1fr}.sec-head p{justify-self:start}}
+.topic{display:grid;grid-template-columns:170px minmax(0,1fr) 250px;gap:clamp(20px,4vw,56px);align-items:start;padding-block:clamp(40px,7vh,72px);border-top:1px solid var(--line)}
+.topic .tlabel{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:14px;display:flex;align-items:center;gap:10px}
+.topic .tlabel::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--orange);flex:none}
+.topic h3{font-size:clamp(30px,4vw,56px);line-height:1.05}
+.topic .side{display:flex;flex-direction:column;gap:16px;padding-top:10px}
+.topic .side p{color:var(--ink-2);font-size:15px;line-height:1.6}
+.ticon{width:76px;height:76px}
+.ticon *,.diag *{vector-effect:non-scaling-stroke}
+.p{stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--d,1))}
+.n{opacity:var(--d,1)}
+.w{opacity:var(--o,1);transition:opacity .25s linear}
+.topic.yours{grid-template-columns:170px minmax(0,1fr)}
+.topic.yours h3{font-size:clamp(48px,8.6vw,132px);line-height:.92;letter-spacing:-.02em}
+.topic.yours h3 .big{color:var(--orange-deep);font-style:italic}
+.yours-row{display:flex;flex-wrap:wrap;gap:22px;align-items:center;margin-top:34px}
+.yours-row p{color:var(--ink-2);max-width:44ch}
+@media (max-width:900px){.topic{grid-template-columns:1fr;gap:14px}.topic .tlabel{padding-top:0}.topic.yours{grid-template-columns:1fr}.topic .side{flex-direction:row;align-items:flex-start;gap:18px}.ticon{width:60px;height:60px;flex:none}}
+
+/* ---------- projetos ---------- */
+.projects{position:relative;padding-block:clamp(90px,14vh,150px);background:var(--paper);border-block:1px solid var(--line-soft)}
+#fiosProj{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#fiosProj .guide{stroke:var(--line-soft)}
+#fiosProj .thread{stroke:rgba(22,33,58,.5);fill:none;stroke-width:1}
+#fiosProj .pulse{stroke:var(--orange);fill:none;stroke-width:1.6;stroke-dasharray:36 964;animation:flow 7s linear infinite;transition:opacity .6s}
+@keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+.proj-grid{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,3vw,40px);margin-top:clamp(40px,8vh,90px)}
+@media (max-width:900px){.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{position:relative;aspect-ratio:1;border-radius:28px;border:1px solid var(--line);background:radial-gradient(120% 90% at 30% 20%,color-mix(in srgb,var(--c) 12%,transparent),transparent 62%),var(--sand);
+  cursor:pointer;padding:clamp(14px,2vw,22px);display:flex;flex-direction:column;justify-content:space-between;text-align:left;transition:transform .6s var(--ease),box-shadow .4s}
+.projects.lines-on .tile{border-color:transparent}
+.tile:hover{transform:translateY(-6px);box-shadow:0 30px 60px -36px rgba(22,33,58,.45)}
+.tile .logo{width:clamp(46px,6vw,64px);height:clamp(46px,6vw,64px);border-radius:18px;display:grid;place-items:center;color:var(--c);background:var(--paper);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent);transition:transform .6s var(--ease),box-shadow .4s}
+.tile .logo svg{width:52%;height:52%}
+.tile:hover .logo{transform:scale(1.08) rotate(-4deg);box-shadow:inset 0 0 0 1px var(--c),0 10px 30px -10px color-mix(in srgb,var(--c) 60%,transparent)}
+.tile .tname{display:block;font-family:var(--f-display);font-size:clamp(20px,2.2vw,30px);line-height:1.05;color:var(--ink)}
+.tile .ttag{display:block;font-size:12.5px;color:var(--mute);margin-top:6px;line-height:1.4}
+.tile .open{position:absolute;right:clamp(12px,1.6vw,18px);top:clamp(12px,1.6vw,18px);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-2);transition:all .4s var(--ease)}
+.tile:hover .open{background:var(--ink);color:var(--sand);box-shadow:none;transform:rotate(45deg)}
+.tile .open svg{width:14px;height:14px}
+@media (max-width:520px){.tile .ttag{display:none}.tile{border-radius:22px}}
+
+/* ---------- galeria ---------- */
+.gal{position:fixed;inset:0;z-index:100;display:none;background:rgba(22,33,58,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:calc(env(safe-area-inset-top,0px) + 18px) var(--gutter) calc(env(safe-area-inset-bottom,0px) + 18px)}
+.gal.open{display:flex;align-items:center;justify-content:center;animation:fade .4s var(--ease)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.gal-panel{position:relative;width:min(1180px,100%);height:min(760px,100%);background:var(--paper);border-radius:30px;box-shadow:0 40px 120px -30px rgba(10,16,30,.6);display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);overflow:hidden;animation:rise .6s var(--ease)}
+@keyframes rise{from{transform:translateY(30px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.gal-stage{position:relative;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(80% 70% at 50% 45%,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%),var(--sand-2);min-height:0;touch-action:pan-y}
+.frame{position:relative;max-height:100%;max-width:100%;display:flex;transition:opacity .35s,transform .5s var(--ease)}
+.frame.swap{opacity:0;transform:translateX(var(--dx,20px))}
+.frame.phone{height:100%;aspect-ratio:560/1212;border-radius:34px;padding:9px;background:#10151C;box-shadow:0 30px 70px -30px rgba(10,16,30,.7)}
+.frame.phone img{border-radius:26px}
+.frame.desk{width:100%;flex-direction:column;border-radius:14px;background:#10151C;box-shadow:0 30px 70px -30px rgba(10,16,30,.7);overflow:hidden}
+.frame.desk::before{content:"";height:26px;flex:none;background:radial-gradient(circle at 16px 13px,#3a4247 4px,transparent 5px),radial-gradient(circle at 32px 13px,#3a4247 4px,transparent 5px),radial-gradient(circle at 48px 13px,#3a4247 4px,transparent 5px),#0b1114}
+.frame img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;max-width:none}
+.frame.desk img{height:auto}
+.illu{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;background:var(--paper);color:var(--ink-2);padding:6px 10px;border-radius:999px;white-space:nowrap;box-shadow:inset 0 0 0 1px var(--line)}
+.gal-nav{position:absolute;inset:auto 18px 18px auto;display:flex;gap:8px}
+.gal-btn{width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;transition:all .3s}
+.gal-btn:hover{background:var(--ink);color:var(--sand)}
+.gal-btn svg{width:18px;height:18px}
+.gal-info{padding:34px clamp(22px,3vw,40px);display:flex;flex-direction:column;gap:18px;overflow:auto}
+.gal-info .glogo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:var(--c);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 50%,transparent)}
+.gal-info .glogo svg{width:26px;height:26px}
+.gal-info h3{font-size:clamp(30px,3.4vw,44px);line-height:1}
+.gal-info .gsum{color:var(--ink-2);font-size:15px}
+.strengths{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.strengths button{all:unset;cursor:pointer;display:grid;grid-template-columns:22px 1fr;gap:12px;padding:12px;border-radius:14px;transition:background .3s}
+.strengths button:hover{background:var(--sand)}
+.strengths button:focus-visible{outline:2px solid var(--blue)}
+.strengths .bul{width:9px;height:9px;border-radius:50%;margin-top:8px;box-shadow:inset 0 0 0 1px var(--mute);transition:all .3s}
+.strengths b{display:block;font-weight:500;font-size:15px;color:var(--ink-2)}
+.strengths span{display:block;font-size:13.5px;color:var(--mute);line-height:1.5;max-height:0;overflow:hidden;transition:max-height .5s var(--ease)}
+.strengths .on{background:var(--sand)}
+.strengths .on b{color:var(--ink)}
+.strengths .on .bul{background:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 22%,transparent)}
+.strengths .on span{max-height:120px;margin-top:4px}
+.gal-foot{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding-top:10px}
+.gal-count{font-family:var(--f-mono);font-size:12px;color:var(--mute);letter-spacing:.1em}
+.gal-close{position:absolute;right:16px;top:16px;z-index:3}
+@media (max-width:860px){
+  .gal{padding:0}
+  .gal-panel{height:100%;width:100%;border-radius:0;grid-template-columns:1fr;grid-template-rows:minmax(0,56%) minmax(0,1fr)}
+  .gal-stage{padding:calc(env(safe-area-inset-top,0px) + 54px) 16px 30px}
+  .gal-info{padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 18px);gap:12px}
+  .gal-info .glogo{display:none}
+  .gal-nav{right:12px;bottom:12px}
+  .gal-btn{width:42px;height:42px}
+}
+
+/* ---------- processo ---------- */
+.process{padding-block:clamp(80px,12vh,130px)}
+.steps{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,3vw,40px);margin-top:50px}
+.steps::before{content:"";position:absolute;left:0;right:0;top:15px;height:1px;background:var(--line)}
+.steps::after{content:"";position:absolute;left:0;top:15px;height:1.5px;width:calc(var(--lp,1) * 100%);background:linear-gradient(90deg,var(--orange),var(--plum),var(--blue))}
+.step{position:relative;padding-top:48px}
+.step .n{position:absolute;top:0;left:0;width:31px;height:31px;border-radius:50%;background:var(--sand);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:12px;color:var(--ink-2);z-index:1;opacity:1}
+.step h3{font-size:30px;line-height:1.05}
+.step p{color:var(--ink-2);font-size:15px;margin-top:10px}
+@media (max-width:820px){.steps{grid-template-columns:1fr 1fr;row-gap:40px}.steps::before,.steps::after{display:none}}
+@media (max-width:480px){.steps{grid-template-columns:1fr}}
+
+/* ---------- formulário ---------- */
+.ask{position:relative;padding-block:clamp(90px,14vh,150px) clamp(60px,10vh,110px);overflow:hidden;background:var(--paper);border-top:1px solid var(--line-soft)}
+.rings{position:absolute;right:-18vw;top:40px;width:min(90vw,980px);aspect-ratio:1;pointer-events:none;transform:scale(var(--rs,1)) rotate(var(--rr,0deg))}
+.rings circle{fill:none;stroke:rgba(22,33,58,.07)}
+.rings circle:nth-child(2){stroke:rgba(224,112,58,.16)}
+.rings circle:nth-child(4){stroke:rgba(37,102,168,.14)}
+.ask-head{position:relative;max-width:1100px}
+.ask-head h2{font-size:clamp(34px,5vw,72px);line-height:1.05;transform:translateY(var(--ty,0))}
+.ask-head h2 em{color:var(--blue)}
+.ask-head h2 .u{color:var(--orange-deep);font-style:italic}
+.ask-line{height:1.5px;background:linear-gradient(90deg,var(--orange),var(--plum),var(--blue),transparent);width:calc(var(--al,1) * 100%);margin-top:40px}
+
+.form{position:relative;margin-top:clamp(36px,6vh,60px)}
+.progress{position:sticky;top:calc(env(safe-area-inset-top,0px) + 112px);z-index:5;margin:0 auto 34px;width:max-content;max-width:100%;display:flex;align-items:center;gap:14px;padding:10px 16px;border-radius:999px;background:rgba(251,248,243,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px var(--line),0 10px 30px -20px rgba(22,33,58,.4)}
+.progress .rail-bar{width:160px;height:3px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.progress .rail-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--blue));transition:width .5s var(--ease)}
+.progress .rail-txt{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);letter-spacing:.06em;white-space:nowrap}
+@media (max-width:860px){.progress{top:calc(env(safe-area-inset-top,0px) + 94px)}.progress .rail-bar{width:100px}}
+
+.qs{display:flex;flex-direction:column;gap:clamp(28px,5vh,56px)}
+.qrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center}
+.qrow:nth-child(even) .q{order:2}
+@media (max-width:860px){.qrow{grid-template-columns:1fr;gap:14px}.qrow:nth-child(even) .q{order:0}}
+.q{scroll-margin-top:190px;position:relative;background:var(--sand);border-radius:22px;padding:clamp(16px,2vw,24px);box-shadow:inset 0 0 0 1px var(--line-soft);transition:box-shadow .4s,background .4s;max-width:560px;width:100%}
+.qrow:nth-child(even) .q{justify-self:end}
+.q:focus-within{box-shadow:inset 0 0 0 1px var(--line),0 20px 50px -30px rgba(37,102,168,.45);background:#FFFDF9}
+.q.done .qn{background:var(--ink);color:var(--sand);box-shadow:none}
+.q-top{display:flex;gap:12px;align-items:flex-start}
+.qn{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;color:var(--mute);box-shadow:inset 0 0 0 1px var(--line);transition:all .35s;margin-top:1px}
+.q .qt{display:block;font-family:var(--f-display);font-size:clamp(19px,1.6vw,22px);line-height:1.2;color:var(--ink)}
+.q .qh{font-size:13px;color:var(--mute);margin-top:4px;line-height:1.5}
+.q .qbody{margin-top:14px;margin-left:38px}
+@media (max-width:560px){.q .qbody{margin-left:0}}
+.opt{font-weight:400;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-left:6px}
+.inp{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink);font:inherit;font-size:15.5px;padding:8px 2px 10px;border-radius:0;transition:border-color .3s}
+.inp::placeholder{color:#8A8F9B}
+.inp:focus{outline:none;border-color:var(--blue)}
+textarea.inp{resize:vertical;min-height:92px;line-height:1.55;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--paper)}
+textarea.inp:focus{border-color:var(--blue)}
+.inp.big{min-height:120px}
+.count{font-family:var(--f-mono);font-size:10.5px;color:var(--mute);text-align:right;margin-top:5px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{position:relative;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border-radius:999px;padding:8px 13px;font-size:13.5px;color:var(--ink-2);background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);transition:all .3s var(--ease);user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip .ck{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--mute);display:grid;place-items:center;transition:all .3s}
+.chip .ck svg{width:8px;height:8px;opacity:0;transform:scale(.4);transition:all .3s var(--ease)}
+.chip:hover{box-shadow:inset 0 0 0 1px var(--ink-2);color:var(--ink)}
+.chip:has(input:checked){background:var(--ink);color:var(--sand);box-shadow:none}
+.chip:has(input:checked) .ck{background:var(--orange);box-shadow:none}
+.chip:has(input:checked) .ck svg{opacity:1;transform:none;color:var(--orange-ink)}
+.chip:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
+.sub-q{margin-top:14px;display:none}
+.sub-q.show{display:block;animation:fade .4s}
+.sub-q label{font-size:13px;color:var(--ink-2)}
+.row2{display:grid;grid-template-columns:1fr;gap:14px}
+.row2 .lbl{font-size:13px;color:var(--ink-2);margin-bottom:8px}
+.ex{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ex button{border:0;cursor:pointer;background:var(--sand-2);color:var(--ink-2);font-size:12px;padding:5px 10px;border-radius:999px;transition:all .25s}
+.ex button:hover{background:var(--ink);color:var(--sand)}
+.err{color:var(--err);font-size:12.5px;margin-top:6px;display:none}
+.q.bad .err{display:block}
+.q.bad{box-shadow:inset 0 0 0 1px rgba(179,64,28,.55)}
+
+/* esquemas de resposta ideal */
+.ideal{position:relative;max-width:520px;width:100%;justify-self:center}
+.ideal figcaption{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.ideal figcaption::before{content:"";width:18px;height:1px;background:var(--orange)}
+.diag{display:block;width:100%;height:auto}
+.diag text{font-family:var(--f-body);font-size:12px;fill:var(--ink-2)}
+.diag .t-strong{font-weight:500;fill:var(--ink)}
+.diag .t-light{fill:var(--sand);font-weight:500}
+.diag .t-mono{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;fill:var(--mute)}
+.ideal{margin:0}
+
+.send-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center;margin-top:24px;padding:8px 4px}
+.send-row p{color:var(--mute);font-size:13.5px;max-width:42ch}
+
+.crm-st{font-size:13px;color:var(--mute,#6b6f7b);margin:-4px 0 16px;min-height:1em}.crm-st.ok{color:#2F7D55}.crm-st.ok::before{content:'✓ ';font-weight:600}
+.done-card{scroll-margin-top:140px;display:none;max-width:780px;margin:24px auto 0;background:var(--sand);border-radius:28px;padding:clamp(22px,3.4vw,40px);box-shadow:inset 0 0 0 1px var(--line),0 30px 70px -40px rgba(22,33,58,.45)}
+.done-card.show{display:block;animation:rise .7s var(--ease)}
+.done-card h3{font-size:clamp(30px,3.6vw,46px);line-height:1.04}
+.done-card h3 em{color:var(--blue)}
+.done-card .dsub{color:var(--ink-2);margin-top:12px;max-width:56ch;font-size:15px}
+.msg{margin-top:10px;background:var(--paper);border-radius:18px;padding:16px 18px;box-shadow:inset 0 0 0 1px var(--line-soft);white-space:pre-wrap;font-size:14px;line-height:1.6;color:var(--ink-2);max-height:280px;overflow:auto}
+.msg-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.toggle{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--ink-2);margin-top:16px}
+.toggle input{position:absolute;opacity:0}
+.toggle .tr{width:40px;height:24px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);position:relative;transition:background .3s;background:var(--paper)}
+.toggle .tr::after{content:"";position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--mute);transition:all .35s var(--ease)}
+.toggle input:checked + .tr{background:var(--ink)}
+.toggle input:checked + .tr::after{transform:translateX(16px);background:var(--sky)}
+.toggle input:focus-visible + .tr{outline:2px solid var(--blue);outline-offset:2px}
+.done-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:24px}
+.btn-wa{--bg:#1FAF63;--fg:#04170C}
+.btn-wa .dot{background:#04170C;color:#5BE39A}
+.btn-wa::before{content:"";position:absolute;z-index:-1;right:8px;top:50%;width:36px;height:36px;margin-top:-18px;border-radius:50%;background:#43C981;transform:scale(0);transition:transform .6s var(--ease)}
+.btn-wa:hover::before{transform:scale(14)}
+.num{font-family:var(--f-mono);font-size:14px;color:var(--ink-2);user-select:all}
+.linkish{background:none;border:0;cursor:pointer;color:var(--mute);text-decoration:underline;text-underline-offset:3px;font-size:14px;padding:6px}
+.linkish:hover{color:var(--ink)}
+
+/* ---------- rodapé ---------- */
+.foot{background:var(--ink);color:var(--sand);padding-block:56px calc(env(safe-area-inset-bottom,0px) + 40px)}
+.foot-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:30px;align-items:start}
+.foot .fwm{display:inline-block;background:var(--sand);border-radius:18px;padding:12px 18px}
+.foot .fwm img{height:48px;width:auto;display:block}
+.foot p{color:rgba(245,239,230,.72);font-size:14px;margin-top:14px;max-width:40ch}
+.foot h4{font-family:var(--f-mono);font-weight:400;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sky);margin:0 0 12px}
+.foot a{display:block;text-decoration:none;color:rgba(245,239,230,.86);font-size:14.5px;padding:3px 0}
+.foot a:hover{color:var(--sky)}
+.foot small{display:block;margin-top:40px;color:rgba(245,239,230,.5);font-size:12.5px}
+@media (max-width:760px){.foot-grid{grid-template-columns:1fr}}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--sand);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;transition:all .4s var(--ease);z-index:200;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .dot-cap{display:none}.expand{height:auto}.expand-sticky{position:relative;height:auto;padding-block:120px}.circle{transform:none;inset:0;width:auto;height:auto;margin:0;border-radius:0}
+}
+</style>
+<link rel="icon" type="image/png" href="crm/icones/favicon-64.png">
+<link rel="apple-touch-icon" href="crm/icones/apple-touch-icon.png">
+<meta name="theme-color" content="#F5EFE6">
+<meta property="og:title" content="Rumëyart Criação">
+<meta property="og:description" content="Apps, sistemas, jogos e documentos feitos sob medida a partir da sua ideia.">
+<meta property="og:image" content="img/rumeyart-simbolo.webp">
+</head>
+<body>
+
+<header class="nav" aria-label="Navegação principal">
+  <div class="nav-in">
+    <a class="brand" href="#topo" aria-label="Rumëyart Criação, início"><img class="sym" src="img/rumeyart-simbolo.webp" alt=""><img class="wm" src="img/rumeyart-marca.webp" alt="Rumëyart Criação"></a>
+    <nav class="nav-links" aria-label="Seções">
+      <a href="#ambiente">O ambiente</a>
+      <a href="#possibilidades">Possibilidades</a>
+      <a href="#projetos">Projetos</a>
+      <a href="#como">Como trabalhamos</a>
+    </nav>
+    <a class="btn btn-primary btn-sm magnet" href="#ideia"><span class="nav-cta-long">Nos conte sua ideia</span><span class="nav-cta-short">Sua ideia</span><span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+  </div>
+</header>
+
+<main id="topo">
+  <!-- TOPO -->
+  <section class="hero" aria-labelledby="h-hero">
+    <canvas id="fios" aria-hidden="true"></canvas>
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow"><b>Rumëyart Criação</b> · apps · sistemas · jogos · documentos</div>
+        <h1 id="h-hero">Transformamos ideias em ferramentas que <em>funcionam</em>.</h1>
+        <p class="lede">Aplicativos, sistemas, jogos e documentos interativos criados a partir da sua rotina ou do seu negócio. Você traz a necessidade; nós estruturamos, desenhamos e entregamos pronto para usar no celular e no computador.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary magnet" href="#ideia">Nos conte sua ideia<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+          <a class="btn btn-ghost" href="#projetos">Ver projetos</a>
+        </div>
+      </div>
+      <div class="logo-wrap" id="heroLogo" aria-hidden="true">
+        <span class="ring"></span><span class="glow"></span>
+        <img src="img/rumeyart-simbolo.webp" alt="" width="900" height="710">
+      </div>
+    </div>
+  </section>
+
+  <div class="band" aria-hidden="true"><div class="band-track" id="band">
+    <span>Estudos</span><span>Organização pessoal</span><span>Finanças</span><span>Gestão de negócios</span><span>Jogos entre amigos</span><span>Catálogos e propostas</span><span>Acervos</span><span>A sua possibilidade</span>
+    <span>Estudos</span><span>Organização pessoal</span><span>Finanças</span><span>Gestão de negócios</span><span>Jogos entre amigos</span><span>Catálogos e propostas</span><span>Acervos</span><span>A sua possibilidade</span>
+  </div></div>
+
+  <!-- AMBIENTE -->
+  <section class="expand" id="ambiente" aria-labelledby="h-amb">
+    <div class="expand-sticky">
+      <div class="circle" id="circle" aria-hidden="true"></div>
+      <div class="dot-cap" id="dotCap" aria-hidden="true">Role para entrar</div>
+      <div class="expand-copy" id="expandCopy">
+        <div class="eyebrow">O ambiente</div>
+        <h2 id="h-amb">Um espaço pensado para a sua ideia ganhar <em>forma</em>.</h2>
+        <div class="pillars">
+          <div class="pillar"><b>Método</b><p>As perguntas certas vêm antes do código. Entendemos o problema, quem vai usar e o resultado esperado.</p></div>
+          <div class="pillar"><b>Clareza</b><p>Você vê e testa as primeiras telas antes do investimento maior. Nada é construído no escuro.</p></div>
+          <div class="pillar"><b>Continuidade</b><p>A ferramenta evolui com o uso. Melhorias chegam como atualização, sem perder dados.</p></div>
+        </div>
+        <div class="sig">Da primeira conversa ao app instalado</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POSSIBILIDADES -->
+  <section class="poss wrap" id="possibilidades" aria-labelledby="h-poss">
+    <div class="sec-head">
+      <h2 id="h-poss">Onde uma ferramenta própria faz diferença.</h2>
+      <p>Se alguma destas situações parece familiar, existe espaço para uma solução feita sob medida para você.</p>
+    </div>
+
+    <article class="topic" data-topic>
+      <div class="tlabel">Estudos</div>
+      <h3 class="reveal">Seu material de estudo está espalhado em quantos lugares diferentes?</h3>
+      <div class="side">
+        <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path class="p" pathLength="1" d="M8 18c10-4 18-2 24 4 6-6 14-8 24-4v30c-10-4-18-2-24 4-6-6-14-8-24-4Z"/>
+          <path class="p" pathLength="1" d="M32 22v30"/>
+          <path class="p" pathLength="1" d="M38 29h11M38 34h7M38 39h10" stroke="#2566A8"/>
+          <path class="p" pathLength="1" d="M32 22c-3-7 0-12 6-14 1 6-1 11-6 14Z" stroke="#E0703A"/>
+        </svg>
+        <p>Matérias, revisões, flashcards e metas organizados em um só lugar, com lembrete na hora certa.</p>
+      </div>
+    </article>
+
+    <article class="topic" data-topic>
+      <div class="tlabel">Organização pessoal</div>
+      <h3 class="reveal">Quantos aplicativos você usa hoje para organizar uma única rotina?</h3>
+      <div class="side">
+        <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path class="p" pathLength="1" d="M22 8a12 12 0 1 0 0 24 9 9 0 0 1 0-24Z" stroke="#E0703A"/>
+          <path class="p" pathLength="1" d="M34 16h22M34 28h16M14 42h40M14 54h28"/>
+          <path class="p" pathLength="1" d="M42 40l3 3 6-6" stroke="#2566A8"/>
+        </svg>
+        <p>Agenda, hábitos, listas e lembretes reunidos numa ferramenta do tamanho da sua rotina.</p>
+      </div>
+    </article>
+
+    <article class="topic" data-topic>
+      <div class="tlabel">Organização financeira</div>
+      <h3 class="reveal">Você sabe exatamente quanto entrou e quanto saiu no último mês?</h3>
+      <div class="side">
+        <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path class="p" pathLength="1" d="M8 50l12-12 10 5 14-17 12-8" stroke="#2566A8"/>
+          <circle class="p" pathLength="1" cx="22" cy="50" r="8"/>
+          <path class="p" pathLength="1" d="M22 42v-8c0-6 4-10 10-10-1 6-4 9-10 10" stroke="#E0703A"/>
+        </svg>
+        <p>Contas, cartões, reservas e metas integrados, com visão clara para você ou para a família.</p>
+      </div>
+    </article>
+
+    <article class="topic" data-topic>
+      <div class="tlabel">Gestão de negócios</div>
+      <h3 class="reveal">Quanto tempo se perde repassando pedidos, orçamentos e cobranças à mão?</h3>
+      <div class="side">
+        <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect class="p" pathLength="1" x="6" y="8" width="22" height="14" rx="5"/>
+          <rect class="p" pathLength="1" x="36" y="25" width="22" height="14" rx="5" stroke="#2566A8"/>
+          <rect class="p" pathLength="1" x="6" y="42" width="22" height="14" rx="5"/>
+          <path class="p" pathLength="1" d="M28 15h8a6 6 0 0 1 6 6v4M36 32h-4a6 6 0 0 0-6 6v4" stroke="#E0703A"/>
+        </svg>
+        <p>Pedidos, propostas, clientes e estoque num fluxo único, do primeiro contato ao pós-venda.</p>
+      </div>
+    </article>
+
+    <article class="topic" data-topic>
+      <div class="tlabel">Jogos entre amigos</div>
+      <h3 class="reveal">E se o jogo da sua turma tivesse as regras da casa e rodasse no celular de cada um?</h3>
+      <div class="side">
+        <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect class="p" pathLength="1" x="10" y="16" width="22" height="32" rx="5" transform="rotate(-12 21 32)"/>
+          <rect class="p" pathLength="1" x="30" y="14" width="22" height="32" rx="5" transform="rotate(10 41 30)" stroke="#2566A8"/>
+          <path class="p" pathLength="1" d="M50 50l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" stroke="#E0703A"/>
+        </svg>
+        <p>Cartas, tabuleiro ou quiz com regras próprias, cada jogador no seu aparelho.</p>
+      </div>
+    </article>
+
+    <article class="topic" data-topic>
+      <div class="tlabel">Infinitas possibilidades</div>
+      <h3 class="reveal">Se é uma tarefa que se repete toda semana, ela pode virar uma ferramenta.</h3>
+      <div class="side">
+        <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path class="p" pathLength="1" d="M32 32c-6-8-10-12-16-12a12 12 0 0 0 0 24c6 0 10-4 16-12s10-12 16-12a12 12 0 0 1 0 24c-6 0-10-4-16-12Z"/>
+          <circle class="n" cx="16" cy="20" r="2" fill="#E0703A" stroke="none"/><circle class="n" cx="48" cy="44" r="2" fill="#2566A8" stroke="none"/>
+        </svg>
+        <p>Acervos, catálogos, cursos, painéis, documentos interativos. Se o processo existe, dá para desenhar.</p>
+      </div>
+    </article>
+
+    <article class="topic yours" data-topic>
+      <div class="tlabel">A sua possibilidade</div>
+      <div>
+        <h3 class="reveal">E a sua, qual é? <span class="big">A sua possibilidade!</span></h3>
+        <div class="yours-row">
+          <svg class="ticon" viewBox="0 0 64 64" fill="none" stroke="#16213A" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+            <rect class="p" pathLength="1" x="8" y="8" width="48" height="48" rx="14"/>
+            <path d="M24 24v16" stroke="#E0703A" stroke-width="2"><animate attributeName="opacity" values="1;1;0;0" dur="1.1s" repeatCount="indefinite"/></path>
+            <path class="p" pathLength="1" d="M52 4l1.5 3.5L57 9l-3.5 1.5L52 14l-1.5-3.5L47 9l3.5-1.5Z" stroke="#2566A8"/>
+          </svg>
+          <p>Conte o que você precisa em poucos minutos. A gente devolve um caminho claro para tirar do papel.</p>
+          <a class="btn btn-primary magnet" href="#ideia">Nos conte sua ideia<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- PROJETOS -->
+  <section class="projects" id="projetos" aria-labelledby="h-proj">
+    <svg id="fiosProj" aria-hidden="true"></svg>
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:0">
+        <h2 id="h-proj">Nossos projetos</h2>
+        <p>Soluções em uso real, cada uma criada para resolver um problema específico. Toque em um projeto para ver as telas e os pontos fortes.</p>
+      </div>
+      <div class="proj-grid" id="projGrid"></div>
+    </div>
+  </section>
+
+  <!-- PROCESSO -->
+  <section class="process wrap" id="como" aria-labelledby="h-como">
+    <div class="sec-head" style="margin-bottom:0">
+      <h2 id="h-como">Como trabalhamos</h2>
+      <p>Etapas claras, entregas visíveis e decisões tomadas junto com você.</p>
+    </div>
+    <div class="steps" id="steps">
+      <div class="step"><span class="n">1</span><h3>Escuta</h3><p>Uma conversa objetiva sobre a rotina, o problema e o resultado que você espera.</p></div>
+      <div class="step"><span class="n">2</span><h3>Desenho</h3><p>As primeiras telas para você tocar, testar e comentar antes da construção completa.</p></div>
+      <div class="step"><span class="n">3</span><h3>Construção</h3><p>A ferramenta funcionando no celular e no computador, com login e dados protegidos.</p></div>
+      <div class="step"><span class="n">4</span><h3>Evolução</h3><p>Depois da entrega, melhorias chegam como atualização, sem perda do que já foi feito.</p></div>
+    </div>
+  </section>
+
+  <!-- FORMULÁRIO -->
+  <section class="ask" id="ideia" aria-labelledby="h-ask">
+    <svg class="rings" id="rings" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="98"/><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="62"/><circle cx="100" cy="100" r="44"/><circle cx="100" cy="100" r="26"/><circle cx="100" cy="100" r="8"/></svg>
+    <div class="wrap">
+      <div class="ask-head" id="askHead">
+        <div class="eyebrow" style="margin-bottom:22px"><b>Nos conte sua ideia</b> · cerca de 5 minutos</div>
+        <h2 id="h-ask" class="reveal">Antes de investir tempo e recursos, vamos fazer as perguntas que nos mostram a <em>essência</em> da sua ideia e transformam sua intenção em <span class="u">resultado.</span></h2>
+        <div class="ask-line" id="askLine"></div>
+      </div>
+
+      <form class="form" id="form" novalidate>
+        <div class="progress" aria-live="polite">
+          <span class="rail-txt" id="railTxt">0 de 9 respondidas</span>
+          <span class="rail-bar"><i id="railBar"></i></span>
+        </div>
+
+        <div class="qs">
+          <!-- 1 -->
+          <div class="qrow">
+            <div class="q" data-q="ideia" data-req>
+              <div class="q-top"><span class="qn">1</span><div>
+                <label class="qt" for="f-ideia">Primeiro descreva sua ideia de forma geral. Só o mais importante que vem à sua mente.</label>
+                <p class="qh">Uma ou duas frases já bastam. O esquema ao lado mostra o que ajuda mais.</p>
+              </div></div>
+              <div class="qbody">
+                <textarea class="inp big" id="f-ideia" name="ideia" maxlength="1200" placeholder="Ex.: Um app para meus alunos marcarem aulas, que me avisa quem está com a mensalidade atrasada."></textarea>
+                <div class="count"><span id="c-ideia">0</span>/1200</div>
+                <div class="err">Escreva pelo menos uma frase sobre a ideia.</div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 280" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: sua ideia ligada a para quem, o que faz e resultado esperado">
+                <path class="p" pathLength="1" d="M220 140 C170 140 150 60 100 60" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M220 140 C160 140 150 140 96 140" stroke="#7A4466" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M220 140 C170 140 150 220 100 220" stroke="#2566A8" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M262 140 C300 140 310 140 330 140" stroke="#16213A" stroke-width="1.2" stroke-dasharray="3 5"/>
+                <rect x="178" y="118" width="84" height="44" rx="22" fill="#16213A"/>
+                <text x="220" y="145" text-anchor="middle" class="t-light">Sua ideia</text>
+                <g class="n">
+                  <rect x="6" y="40" width="124" height="40" rx="12" fill="#FBF8F3" stroke="#E0703A"/>
+                  <text x="68" y="57" text-anchor="middle" class="t-mono">PARA QUEM</text><text x="68" y="72" text-anchor="middle">alunos da academia</text>
+                  <rect x="6" y="120" width="124" height="40" rx="12" fill="#FBF8F3" stroke="#7A4466"/>
+                  <text x="68" y="137" text-anchor="middle" class="t-mono">O QUE FAZ</text><text x="68" y="152" text-anchor="middle">marca aulas e cobra</text>
+                  <rect x="6" y="200" width="124" height="40" rx="12" fill="#FBF8F3" stroke="#2566A8"/>
+                  <text x="68" y="217" text-anchor="middle" class="t-mono">RESULTADO</text><text x="68" y="232" text-anchor="middle">menos tempo cobrando</text>
+                  <rect x="332" y="112" width="96" height="56" rx="14" fill="#7CC4F0" fill-opacity=".35"/>
+                  <text x="380" y="136" text-anchor="middle" class="t-strong">escopo claro</text><text x="380" y="153" text-anchor="middle">em 1 conversa</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 2 -->
+          <div class="qrow">
+            <div class="q" data-q="nome" data-req>
+              <div class="q-top"><span class="qn">2</span><div>
+                <label class="qt" for="f-nome">Como podemos te chamar?</label>
+              </div></div>
+              <div class="qbody">
+                <input class="inp" id="f-nome" name="nome" autocomplete="name" maxlength="80" placeholder="Seu nome">
+                <div class="err">Informe seu nome para personalizarmos o atendimento.</div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 200" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: o nome de quem vai conversar leva a um atendimento personalizado">
+                <circle class="p" pathLength="1" cx="70" cy="100" r="38" stroke="#16213A" stroke-width="1.3"/>
+                <circle class="p" pathLength="1" cx="70" cy="88" r="11" stroke="#16213A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M50 120c6-12 34-12 40 0" stroke="#16213A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M112 100 H200" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M192 94l8 6-8 6" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M214 64h196a14 14 0 0 1 14 14v36a14 14 0 0 1-14 14H262l-18 16v-16h-30a14 14 0 0 1-14-14V78a14 14 0 0 1 14-14Z" stroke="#2566A8" stroke-width="1.3"/>
+                <g class="n">
+                  <text x="70" y="160" text-anchor="middle" class="t-mono">COMO PREFERE</text>
+                  <text x="70" y="175" text-anchor="middle">ser chamado(a)</text>
+                  <text x="228" y="92" class="t-strong">“Oi, Joana! Li a sua ideia</text>
+                  <text x="228" y="110">e já separei algumas perguntas.”</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 3 -->
+          <div class="qrow">
+            <div class="q" data-q="whats" data-req>
+              <div class="q-top"><span class="qn">3</span><div>
+                <label class="qt" for="f-whats" id="qt-whats">Qual WhatsApp usamos para continuar a conversa?</label>
+                <p class="qh">Usado apenas para falar sobre este projeto.</p>
+              </div></div>
+              <div class="qbody">
+                <input class="inp" id="f-whats" name="whats" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(11) 9 0000-0000">
+                <div class="err">Confira o número com DDD, como (11) 9 9999-9999.</div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 210" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: número com DDD leva a uma conversa direta com quem constrói">
+                <rect class="p" pathLength="1" x="30" y="20" width="96" height="170" rx="18" stroke="#16213A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M66 32h24" stroke="#16213A" stroke-width="1.3"/>
+                <g class="n">
+                  <rect x="150" y="62" width="58" height="34" rx="10" fill="#E0703A" fill-opacity=".16" stroke="#E0703A"/>
+                  <text x="179" y="84" text-anchor="middle" class="t-strong">(11)</text>
+                  <rect x="214" y="62" width="120" height="34" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".5"/>
+                  <text x="274" y="84" text-anchor="middle" class="t-strong">9 9999-9999</text>
+                  <text x="179" y="116" text-anchor="middle" class="t-mono">DDD</text>
+                  <text x="274" y="116" text-anchor="middle" class="t-mono">NÚMERO COM 9</text>
+                  <rect x="228" y="140" width="190" height="44" rx="14" fill="#7CC4F0" fill-opacity=".35"/>
+                  <text x="323" y="159" text-anchor="middle" class="t-strong">conversa direta</text>
+                  <text x="323" y="175" text-anchor="middle">com quem constrói</text>
+                </g>
+                <path class="p" pathLength="1" d="M126 79 H146" stroke="#E0703A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M274 120 V136" stroke="#2566A8" stroke-width="1.3"/>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 4 -->
+          <div class="qrow">
+            <div class="q" data-q="para">
+              <div class="q-top"><span class="qn">4</span><div>
+                <span class="qt" id="qt-para">É para uso pessoal ou para um negócio?</span>
+              </div></div>
+              <div class="qbody">
+                <div class="chips" role="radiogroup" aria-labelledby="qt-para">
+                  <label class="chip"><input type="radio" name="para" value="Para mim (uso pessoal)"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Pessoal</label>
+                  <label class="chip"><input type="radio" name="para" value="Para minha empresa"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Minha empresa</label>
+                  <label class="chip"><input type="radio" name="para" value="Para um projeto ou coletivo"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Projeto ou coletivo</label>
+                  <label class="chip"><input type="radio" name="para" value="Para presentear alguém"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Presente</label>
+                </div>
+                <div class="sub-q" id="subMarca">
+                  <label for="f-marca">Nome da marca <span class="opt">se houver</span></label>
+                  <input class="inp" id="f-marca" name="marca" maxlength="80" placeholder="Empresa, marca ou projeto">
+                </div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 230" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: se for empresa, o nome da marca leva cores e logo para dentro do app">
+                <path class="p" pathLength="1" d="M70 115 C120 115 120 40 170 40M70 115 C120 115 120 90 170 90M70 115 C120 115 120 140 170 140M70 115 C120 115 120 190 170 190" stroke="#16213A" stroke-opacity=".55" stroke-width="1.2"/>
+                <path class="p" pathLength="1" d="M258 90 H300" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M300 90 C330 90 330 60 360 60" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M300 90 C330 90 330 120 360 120" stroke="#2566A8" stroke-width="1.4"/>
+                <g class="n">
+                  <circle cx="52" cy="115" r="22" fill="#16213A"/><text x="52" y="119" text-anchor="middle" class="t-light">você</text>
+                  <rect x="170" y="26" width="88" height="28" rx="14" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="214" y="44" text-anchor="middle">pessoal</text>
+                  <rect x="170" y="76" width="88" height="28" rx="14" fill="#E0703A"/><text x="214" y="94" text-anchor="middle" style="fill:#1C0D05;font-weight:500">empresa</text>
+                  <rect x="170" y="126" width="88" height="28" rx="14" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="214" y="144" text-anchor="middle">projeto</text>
+                  <rect x="170" y="176" width="88" height="28" rx="14" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="214" y="194" text-anchor="middle">presente</text>
+                  <rect x="360" y="46" width="72" height="28" rx="10" fill="#FBF8F3" stroke="#E0703A"/><text x="396" y="64" text-anchor="middle">sua marca</text>
+                  <rect x="360" y="106" width="72" height="28" rx="10" fill="#7CC4F0" fill-opacity=".35"/><text x="396" y="124" text-anchor="middle">cores e logo</text>
+                  <text x="396" y="158" text-anchor="middle" class="t-mono">NO APP</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 5 -->
+          <div class="qrow">
+            <div class="q" data-q="tipo">
+              <div class="q-top"><span class="qn">5</span><div>
+                <span class="qt" id="qt-tipo">Qual formato você imagina?</span>
+                <p class="qh">Pode marcar mais de um. “Ainda não sei” também ajuda.</p>
+              </div></div>
+              <div class="qbody">
+                <div class="chips" role="group" aria-labelledby="qt-tipo">
+                  <label class="chip"><input type="checkbox" name="tipo" value="App de celular"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>App de celular</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Sistema ou painel de gestão"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Sistema ou painel</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Site ou catálogo"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Site ou catálogo</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Jogo"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Jogo</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Documento ou planilha inteligente"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Documento inteligente</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Ainda não sei"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Ainda não sei</label>
+                </div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 250" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: uma mesma base de dados alimenta app, painel, site, jogo e documento">
+                <path class="p" pathLength="1" d="M220 125 L70 50M220 125 L370 50M220 125 L60 185M220 125 L380 185M220 125 L220 222" stroke="#16213A" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 5"/>
+                <circle cx="220" cy="125" r="40" fill="#16213A"/>
+                <text x="220" y="122" text-anchor="middle" class="t-light">mesma</text><text x="220" y="137" text-anchor="middle" class="t-light">base</text>
+                <g class="n" stroke-width="1.3">
+                  <rect x="56" y="28" width="28" height="44" rx="6" fill="#FBF8F3" stroke="#E0703A"/><path d="M66 34h8" stroke="#E0703A"/>
+                  <text x="70" y="88" text-anchor="middle">app</text>
+                  <rect x="344" y="30" width="52" height="36" rx="5" fill="#FBF8F3" stroke="#2566A8"/><path d="M350 58l8-8 7 5 10-12 15 9" stroke="#2566A8"/>
+                  <text x="370" y="82" text-anchor="middle">painel</text>
+                  <rect x="36" y="168" width="48" height="34" rx="5" fill="#FBF8F3" stroke="#7A4466"/><path d="M36 176h48" stroke="#7A4466"/>
+                  <text x="60" y="218" text-anchor="middle">site</text>
+                  <rect x="362" y="166" width="24" height="34" rx="4" fill="#FBF8F3" stroke="#E0703A" transform="rotate(-10 374 183)"/><rect x="378" y="166" width="24" height="34" rx="4" fill="#FBF8F3" stroke="#2566A8" transform="rotate(8 390 183)"/>
+                  <text x="382" y="218" text-anchor="middle">jogo</text>
+                  <path d="M206 208h20l8 8v24h-28Z" fill="#FBF8F3" stroke="#16213A"/><path d="M211 224h16M211 231h12" stroke="#16213A"/>
+                  <text x="258" y="232">documento</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 6 -->
+          <div class="qrow">
+            <div class="q" data-q="dor">
+              <div class="q-top"><span class="qn">6</span><div>
+                <label class="qt" for="f-dor" id="qt-dor">Qual problema essa ferramenta precisa resolver?</label>
+                <p class="qh">Seja concreto: o que acontece, com que frequência e quanto tempo ou dinheiro isso custa.</p>
+              </div></div>
+              <div class="qbody">
+                <textarea class="inp" id="f-dor" name="dor" maxlength="800" placeholder="Hoje eu perco tempo com…"></textarea>
+                <div class="ex" data-for="f-dor"><button type="button">Hoje eu perco tempo com…</button><button type="button">Toda semana eu preciso…</button><button type="button">Eu dependo de alguém para…</button></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 220" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: caderno, WhatsApp e planilha convergem numa dor concreta, que vira requisito da ferramenta">
+                <path class="p" pathLength="1" d="M92 40 C140 40 140 110 180 110M92 110 H180M92 180 C140 180 140 110 180 110" stroke="#16213A" stroke-opacity=".45" stroke-width="1.2"/>
+                <path class="p" pathLength="1" d="M318 110 H352" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M346 104l7 6-7 6" stroke="#E0703A" stroke-width="1.4"/>
+                <g class="n">
+                  <rect x="12" y="24" width="80" height="32" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="52" y="44" text-anchor="middle">caderno</text>
+                  <rect x="12" y="94" width="80" height="32" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="52" y="114" text-anchor="middle">WhatsApp</text>
+                  <rect x="12" y="164" width="80" height="32" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="52" y="184" text-anchor="middle">planilha</text>
+                  <rect x="180" y="72" width="138" height="76" rx="14" fill="#E0703A" fill-opacity=".14" stroke="#E0703A"/>
+                  <text x="249" y="94" text-anchor="middle" class="t-mono">DOR CONCRETA</text>
+                  <text x="249" y="113" text-anchor="middle" class="t-strong">3 h por semana</text>
+                  <text x="249" y="130" text-anchor="middle">repassando pedidos</text>
+                  <rect x="356" y="84" width="76" height="52" rx="14" fill="#16213A"/>
+                  <text x="394" y="106" text-anchor="middle" class="t-light">vira</text><text x="394" y="122" text-anchor="middle" class="t-light">requisito</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 7 -->
+          <div class="qrow">
+            <div class="q" data-q="desejo">
+              <div class="q-top"><span class="qn">7</span><div>
+                <label class="qt" for="f-desejo">O que ela precisa fazer por você no primeiro dia de uso?</label>
+                <p class="qh">Liste as funções essenciais. Se admira algum app, pode citar.</p>
+              </div></div>
+              <div class="qbody">
+                <textarea class="inp" id="f-desejo" name="desejo" maxlength="800" placeholder="Ela me mostra…, me avisa quando…, gera…"></textarea>
+                <div class="ex" data-for="f-desejo"><button type="button">Ela me mostra…</button><button type="button">Ela me avisa quando…</button><button type="button">Ela gera automaticamente…</button><button type="button">Parecido com o app…</button></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 240" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Mapa mental: primeiro dia de uso com as funções mostra, avisa, automatiza e compartilha">
+                <path class="p" pathLength="1" d="M220 120 C180 120 170 50 130 50M220 120 C180 120 170 190 130 190M220 120 C260 120 270 50 310 50M220 120 C260 120 270 190 310 190" stroke="#16213A" stroke-opacity=".5" stroke-width="1.2"/>
+                <circle cx="220" cy="120" r="38" fill="#16213A"/>
+                <text x="220" y="116" text-anchor="middle" class="t-light">primeiro</text><text x="220" y="131" text-anchor="middle" class="t-light">dia</text>
+                <g class="n">
+                  <rect x="14" y="30" width="116" height="40" rx="12" fill="#FBF8F3" stroke="#E0703A"/><text x="72" y="47" text-anchor="middle" class="t-mono">MOSTRA</text><text x="72" y="62" text-anchor="middle">saldo do mês</text>
+                  <rect x="14" y="170" width="116" height="40" rx="12" fill="#FBF8F3" stroke="#7A4466"/><text x="72" y="187" text-anchor="middle" class="t-mono">AVISA</text><text x="72" y="202" text-anchor="middle">contas a vencer</text>
+                  <rect x="310" y="30" width="116" height="40" rx="12" fill="#FBF8F3" stroke="#2566A8"/><text x="368" y="47" text-anchor="middle" class="t-mono">AUTOMATIZA</text><text x="368" y="62" text-anchor="middle">proposta em PDF</text>
+                  <rect x="310" y="170" width="116" height="40" rx="12" fill="#7CC4F0" fill-opacity=".35"/><text x="368" y="187" text-anchor="middle" class="t-mono">COMPARTILHA</text><text x="368" y="202" text-anchor="middle">com a equipe</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 8 -->
+          <div class="qrow">
+            <div class="q" data-q="uso">
+              <div class="q-top"><span class="qn">8</span><div>
+                <span class="qt">Quem vai usar, e em qual dispositivo?</span>
+              </div></div>
+              <div class="qbody row2">
+                <div><div class="lbl" id="lb-quem">Quem usa</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-quem">
+                    <label class="chip"><input type="radio" name="quem" value="Só eu"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Só eu</label>
+                    <label class="chip"><input type="radio" name="quem" value="Eu e mais alguém"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Eu e mais alguém</label>
+                    <label class="chip"><input type="radio" name="quem" value="Minha equipe"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Minha equipe</label>
+                    <label class="chip"><input type="radio" name="quem" value="Meus clientes ou alunos"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Clientes ou alunos</label>
+                  </div></div>
+                <div><div class="lbl" id="lb-onde">Onde usa</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-onde">
+                    <label class="chip"><input type="radio" name="onde" value="No celular"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Celular</label>
+                    <label class="chip"><input type="radio" name="onde" value="No computador"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Computador</label>
+                    <label class="chip"><input type="radio" name="onde" value="Nos dois"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Nos dois</label>
+                  </div></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 230" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: quem usa e com qual nível de acesso, ligado a celular e computador">
+                <path class="p" pathLength="1" d="M110 45 C200 45 220 75 300 75M110 115 C200 115 220 75 300 75M110 115 C200 115 220 165 300 165M110 185 C200 185 220 165 300 165" stroke="#16213A" stroke-opacity=".45" stroke-width="1.2"/>
+                <g class="n">
+                  <rect x="14" y="28" width="96" height="34" rx="17" fill="#16213A"/><text x="62" y="49" text-anchor="middle" class="t-light">você</text>
+                  <rect x="14" y="98" width="96" height="34" rx="17" fill="#FBF8F3" stroke="#7A4466"/><text x="62" y="119" text-anchor="middle">equipe</text>
+                  <rect x="14" y="168" width="96" height="34" rx="17" fill="#FBF8F3" stroke="#2566A8"/><text x="62" y="189" text-anchor="middle">clientes</text>
+                  <text x="160" y="36" class="t-mono">ADMIN</text><text x="160" y="106" class="t-mono">OPERAÇÃO</text><text x="160" y="206" class="t-mono">CONSULTA</text>
+                  <rect x="300" y="52" width="120" height="46" rx="12" fill="#FBF8F3" stroke="#E0703A"/><text x="360" y="80" text-anchor="middle" class="t-strong">computador</text>
+                  <rect x="300" y="142" width="120" height="46" rx="12" fill="#7CC4F0" fill-opacity=".35"/><text x="360" y="170" text-anchor="middle" class="t-strong">celular</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 9 -->
+          <div class="qrow">
+            <div class="q" data-q="tempo">
+              <div class="q-top"><span class="qn">9</span><div>
+                <span class="qt">Prazo e investimento de referência</span>
+                <p class="qh">Serve para desenharmos algo viável. O orçamento definitivo vem depois da conversa.</p>
+              </div></div>
+              <div class="qbody row2">
+                <div><div class="lbl" id="lb-prazo">Quando quer começar a usar</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-prazo">
+                    <label class="chip"><input type="radio" name="prazo" value="O quanto antes"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>O quanto antes</label>
+                    <label class="chip"><input type="radio" name="prazo" value="Em 1 a 2 meses"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Em 1 a 2 meses</label>
+                    <label class="chip"><input type="radio" name="prazo" value="Sem pressa"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Sem pressa</label>
+                  </div></div>
+                <div><div class="lbl" id="lb-inv">Quanto pensa em investir</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-inv">
+                    <label class="chip"><input type="radio" name="invest" value="Ainda não sei"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Ainda não sei</label>
+                    <label class="chip"><input type="radio" name="invest" value="Até R$ 1.500"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Até R$ 1.500</label>
+                    <label class="chip"><input type="radio" name="invest" value="R$ 1.500 a R$ 5.000"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>R$ 1.500 a 5.000</label>
+                    <label class="chip"><input type="radio" name="invest" value="Acima de R$ 5.000"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Acima de R$ 5.000</label>
+                  </div></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 200" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Linha do tempo: conversa, protótipo, versão 1 e evolução, com investimento distribuído por etapa">
+                <path class="p" pathLength="1" d="M40 70 H400" stroke="url(#gline)" stroke-width="2"/>
+                <defs><linearGradient id="gline" gradientUnits="userSpaceOnUse" x1="40" y1="0" x2="400" y2="0"><stop offset="0" stop-color="#E0703A"/><stop offset=".5" stop-color="#7A4466"/><stop offset="1" stop-color="#2566A8"/></linearGradient></defs>
+                <g class="n">
+                  <circle cx="50" cy="70" r="9" fill="#E0703A"/><circle cx="163" cy="70" r="9" fill="#FBF8F3" stroke="#7A4466" stroke-width="1.6"/><circle cx="277" cy="70" r="9" fill="#FBF8F3" stroke="#7A4466" stroke-width="1.6"/><circle cx="390" cy="70" r="9" fill="#2566A8"/>
+                  <text x="50" y="44" text-anchor="middle" class="t-strong">conversa</text>
+                  <text x="163" y="44" text-anchor="middle" class="t-strong">protótipo</text>
+                  <text x="277" y="44" text-anchor="middle" class="t-strong">versão 1</text>
+                  <text x="390" y="44" text-anchor="middle" class="t-strong">evolução</text>
+                  <text x="30" y="124" class="t-mono">INVESTIMENTO POR ETAPA</text>
+                  <rect x="30" y="136" width="60" height="20" rx="6" fill="#E0703A" fill-opacity=".25"/>
+                  <rect x="94" y="136" width="120" height="20" rx="6" fill="#7A4466" fill-opacity=".22"/>
+                  <rect x="218" y="136" width="130" height="20" rx="6" fill="#2566A8" fill-opacity=".22"/>
+                  <rect x="352" y="136" width="58" height="20" rx="6" fill="#7CC4F0" fill-opacity=".45"/>
+                  <text x="30" y="180">Você decide a cada entrega, sem pacote fechado.</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+        </div>
+
+        <div class="send-row" id="sendRow">
+          <button class="btn btn-primary magnet" type="submit" id="sendBtn">Enviar minha ideia<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></button>
+          <p>No próximo passo você envia tudo pelo WhatsApp, já escrito.</p>
+        </div>
+
+        <div class="done-card" id="done" tabindex="-1" aria-live="polite">
+          <div class="eyebrow" style="margin-bottom:14px"><b>Ideia registrada</b> · último passo</div>
+          <h3 id="doneTitle">Pronto. Sua ideia está <em>registrada</em>.</h3>
+          <p class="dsub">Envie pelo WhatsApp para darmos o próximo passo. A mensagem já está escrita; é só conferir e enviar.</p>
+          <p class="crm-st" id="crmSt" aria-live="polite"></p>
+          <div class="msg-label"><span>Sua mensagem</span><button type="button" class="linkish" id="copyMsg">Copiar</button></div>
+          <div class="msg" id="msg"></div>
+          <label class="toggle"><input type="checkbox" id="incAll" checked><span class="tr"></span>Incluir também as outras respostas</label>
+          <div class="done-actions">
+            <a class="btn btn-wa magnet" id="waBtn" href="https://wa.me/5511990234473" target="_blank" rel="noopener">Enviar no WhatsApp<span class="dot"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg></span></a>
+            <span class="num">+55 11 99023-4473</span>
+            <button type="button" class="linkish" id="editBack">Voltar e ajustar respostas</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <span class="fwm"><img src="img/rumeyart-marca.webp" alt="Rumëyart Criação"></span>
+        <p>Criação de aplicativos, sistemas, jogos e documentos sob medida, para pessoas e negócios.</p>
+      </div>
+      <div>
+        <h4>Navegar</h4>
+        <a href="#ambiente">O ambiente</a><a href="#possibilidades">Possibilidades</a><a href="#projetos">Projetos</a><a href="#ideia">Nos conte sua ideia</a>
+      </div>
+      <div>
+        <h4>Conversar</h4>
+        <a href="https://wa.me/5511990234473" target="_blank" rel="noopener">WhatsApp · +55 11 99023-4473</a>
+      </div>
+    </div>
+    <small>© 2026 Rumëyart Criação.</small>
+  </div>
+</footer>
+
+<div class="gal" id="gal" role="dialog" aria-modal="true" aria-labelledby="galName">
+  <div class="gal-panel" id="galPanel">
+    <button class="gal-btn gal-close" id="galClose" aria-label="Fechar galeria"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    <div class="gal-stage" id="galStage">
+      <div class="frame" id="galFrame"><img id="galImg" alt=""></div>
+      <div class="gal-nav">
+        <button class="gal-btn" id="galPrev" aria-label="Tela anterior"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3 5 8l5 5"/></svg></button>
+        <button class="gal-btn" id="galNext" aria-label="Próxima tela"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></button>
+      </div>
+    </div>
+    <div class="gal-info">
+      <div class="glogo" id="galLogo"></div>
+      <div>
+        <div class="eyebrow" id="galTag"></div>
+        <h3 id="galName" style="margin-top:10px"></h3>
+      </div>
+      <p class="gsum" id="galSum"></p>
+      <ul class="strengths" id="galList"></ul>
+      <div class="gal-foot">
+        <span class="gal-count" id="galCount"></span>
+        <a class="btn btn-primary btn-sm" href="#ideia" id="galCta">Quero algo assim<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const IMG = {"ac1": "img/projetos/ac1.webp", "ac2": "img/projetos/ac2.webp", "ac3": "img/projetos/ac3.webp", "ac4": "img/projetos/ac4.webp", "grana_dashboard": "img/projetos/grana_dashboard.webp", "grana_transacoes": "img/projetos/grana_transacoes.webp", "grana_cartoes": "img/projetos/grana_cartoes.webp", "grana_cofrinhos": "img/projetos/grana_cofrinhos.webp", "grana_metas": "img/projetos/grana_metas.webp", "grana_agenda": "img/projetos/grana_agenda.webp", "grana_relatorios": "img/projetos/grana_relatorios.webp", "cm_d_home": "img/projetos/cm_d_home.webp", "cm_d_Regras": "img/projetos/cm_d_Regras.webp", "cm_m_Regras": "img/projetos/cm_m_Regras.webp", "sb1": "img/projetos/sb1.webp", "sb2": "img/projetos/sb2.webp", "sb3": "img/projetos/sb3.webp", "sb4": "img/projetos/sb4.webp"};
+</script>
+<script>
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const WA_NUMBER='5511990234473';
+
+/* ---------------- projetos ---------------- */
+const LOGOS={
+  acervo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6 3v18M10 3v18M14 3v18M18 3v18M4 7h16M4 11h16M4 15h16"/><circle cx="10" cy="9" r="1.5" fill="currentColor"/><circle cx="14" cy="13" r="1.5" fill="currentColor"/></svg>',
+  grana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13.5c0-5 4.5-9 10-9 4 0 7.4 1.7 9 4.2l2.5-.9-1.3 3c.4.9.7 1.9.7 3 0 5-5 9-11 9S4 18.5 4 13.5Z" transform="translate(-1.5 0) scale(.94)"/><circle cx="9.4" cy="12.2" r="1" fill="currentColor" stroke="none"/><path d="M8.4 5.2 6.5 2.6"/></svg>',
+  cacadores:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3l11 11M20 3 9 14"/><path d="M13 16.5l4.5-4.5M6.5 12l4.5 4.5"/><path d="M16 16l4 4M8 16l-4 4"/></svg>',
+  simbiosys:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21 12 4l8 17M7.4 14h9.2M12 4v17"/><path d="M12 4c1.5-1.8 3.6-2.2 5-1.6-.6 1.6-2.6 2.4-5 1.6" /></svg>'
+};
+const PROJECTS=[
+ {id:'acervo',name:'Acervo dos Rezos',tag:'Cifras e letras',c:'#B7791F',
+  sum:'Acervo coletivo de cifras e letras, com busca rápida, tom ajustável e rolagem automática para tocar sem soltar o instrumento.',
+  slides:[
+   {img:'ac1',k:'phone',il:1,t:'Cifra que acompanha a mão',d:'Transposição de tom, capotraste e rolagem automática na velocidade da música.'},
+   {img:'ac2',k:'phone',il:1,t:'Acervo que cresce com o grupo',d:'Busca por nome, trecho ou tom, favoritos, listas e níveis para quem contribui.'},
+   {img:'ac3',k:'phone',il:1,t:'Editor de acordes',d:'Diagramas personalizados para registrar a forma de tocar de cada grupo.'},
+   {img:'ac4',k:'phone',il:1,t:'Importação por PDF, foto ou texto',d:'Editores aprovam cada cifra antes de ela entrar para todos.'}
+  ]},
+ {id:'grana',name:'Grana a Dois',tag:'Finanças do casal',c:'#E0661A',
+  sum:'Finanças do casal em um só lugar: o que é de cada um, o que é compartilhado e para onde o dinheiro está indo.',
+  slides:[
+   {img:'grana_dashboard',k:'phone',t:'Lançamento em linguagem natural',d:'Escreva “Uber 32,90 ontem” e valor, data e categoria entram sozinhos.'},
+   {img:'grana_transacoes',k:'phone',t:'Individual e compartilhado',d:'Lançamentos de cada um e do casal lado a lado, com privacidade respeitada.'},
+   {img:'grana_cartoes',k:'phone',t:'Cartões sob controle',d:'Fatura, limite, fechamento, vencimento e histórico de pagamentos.'},
+   {img:'grana_cofrinhos',k:'phone',t:'Cofrinhos vinculados',d:'Reservas para objetivos, que podem funcionar como limite de um cartão.'},
+   {img:'grana_metas',k:'phone',t:'Metas com prazo',d:'Quanto falta, até quando e quanto guardar por mês.'},
+   {img:'grana_agenda',k:'phone',t:'Agenda financeira',d:'Saldo projetado para o fim do mês e vencimentos dos próximos 7 dias.'},
+   {img:'grana_relatorios',k:'phone',t:'Relatórios e exportação',d:'Visão mensal ou anual. O app se instala no celular como qualquer outro.'}
+  ]},
+ {id:'cacadores',name:'Caçadores de Monstros',tag:'Jogo de cartas online',c:'#6E8A1F',
+  sum:'Jogo de cartas para jogar com amigos, cada um no seu aparelho, com as regras aplicadas automaticamente pela mesa.',
+  slides:[
+   {img:'cm_d_home',k:'desk',t:'Uma conta por jogador',d:'Login individual e mão privada: cada um vê apenas as próprias cartas.'},
+   {img:'cm_d_Regras',k:'desk',t:'Regras aplicadas pelo jogo',d:'Fases, votação, pedidos de intervenção e ajuda com aceite, tudo mediado pela mesa.'},
+   {img:'cm_m_Regras',k:'phone',t:'Funciona no celular',d:'A turma joga junta mesmo com cada um em sua casa.'}
+  ]},
+ {id:'simbiosys',name:'Simbiosys',tag:'Catálogo e propostas',c:'#3F7A3A',
+  sum:'Para uma marcenaria de playgrounds: catálogo com pedido de orçamento e painel que transforma cada pedido em proposta.',
+  slides:[
+   {img:'sb1',k:'phone',il:1,t:'Catálogo de modelos',d:'Apresentação cuidadosa dos produtos, já com o pedido de orçamento.'},
+   {img:'sb2',k:'phone',il:1,t:'Pedido em 2 minutos',d:'O cliente informa espaço, idades e desejos. Tudo chega organizado.'},
+   {img:'sb3',k:'phone',il:1,t:'Painel de pedidos',d:'Cada pedido entra na lista com status e abre uma proposta pré-preenchida.'},
+   {img:'sb4',k:'phone',il:1,t:'Proposta numerada em PDF',d:'“Proposta Nº · Cliente · Modelo”, com valores ajustáveis.'}
+  ]}
+];
+
+const grid=$('#projGrid');
+PROJECTS.forEach((p,i)=>{
+  const b=document.createElement('button');
+  b.className='tile'; b.type='button'; b.style.setProperty('--c',p.c);
+  b.setAttribute('aria-label',`Abrir galeria de ${p.name}`);
+  b.innerHTML=`<span class="open" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></span>
+  <span class="logo" aria-hidden="true">${LOGOS[p.id]}</span>
+  <span><span class="tname">${p.name}</span><span class="ttag">${p.tag}</span></span>`;
+  b.addEventListener('click',()=>openGal(i,0,b));
+  grid.appendChild(b);
+});
+
+/* ---------------- galeria ---------------- */
+const gal=$('#gal'), gImg=$('#galImg'), gFrame=$('#galFrame'), gList=$('#galList');
+let gp=0, gs=0, lastFocus=null;
+function renderSlide(dir){
+  const p=PROJECTS[gp], s=p.slides[gs];
+  const apply=()=>{
+    gImg.src=IMG[s.img]||''; gImg.alt=`${p.name}: ${s.t}`;
+    gFrame.className='frame '+s.k;
+    let tag=gFrame.querySelector('.illu'); if(tag) tag.remove();
+    if(s.il){ tag=document.createElement('span'); tag.className='illu'; tag.textContent='prévia ilustrativa'; gFrame.appendChild(tag); }
+  };
+  if(dir && !RM){ gFrame.style.setProperty('--dx',(dir>0?-24:24)+'px'); gFrame.classList.add('swap'); setTimeout(()=>{apply(); gFrame.style.setProperty('--dx',(dir>0?24:-24)+'px'); requestAnimationFrame(()=>{gFrame.classList.remove('swap')});},220); }
+  else apply();
+  $$('.strengths li',gal).forEach((li,i)=>{ li.firstElementChild.classList.toggle('on',i===gs); li.firstElementChild.setAttribute('aria-current',i===gs?'true':'false'); });
+  $('#galCount').textContent=String(gs+1).padStart(2,'0')+' / '+String(p.slides.length).padStart(2,'0');
+}
+function openGal(i,s,from){
+  gp=i; gs=s||0; lastFocus=from||document.activeElement;
+  const p=PROJECTS[gp];
+  $('#galPanel').style.setProperty('--c',p.c);
+  $('#galLogo').innerHTML=LOGOS[p.id];
+  $('#galTag').textContent=p.tag;
+  $('#galName').textContent=p.name;
+  $('#galSum').textContent=p.sum;
+  gList.innerHTML='';
+  p.slides.forEach((sl,k)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<button type="button"><i class="bul"></i><div><b></b><span></span></div></button>`;
+    li.querySelector('b').textContent=sl.t; li.querySelector('span').textContent=sl.d;
+    li.firstElementChild.addEventListener('click',()=>{const d=k>gs?1:-1; gs=k; renderSlide(d);});
+    gList.appendChild(li);
+  });
+  gal.classList.add('open'); document.documentElement.style.overflow='hidden';
+  renderSlide(0);
+  setTimeout(()=>$('#galClose').focus(),50);
+}
+function closeGal(){ gal.classList.remove('open'); document.documentElement.style.overflow=''; if(lastFocus) lastFocus.focus({preventScroll:true}); }
+function step(d){ const n=PROJECTS[gp].slides.length; gs=(gs+d+n)%n; renderSlide(d); }
+$('#galClose').addEventListener('click',closeGal);
+$('#galPrev').addEventListener('click',()=>step(-1));
+$('#galNext').addEventListener('click',()=>step(1));
+$('#galCta').addEventListener('click',()=>closeGal());
+gal.addEventListener('click',e=>{ if(e.target===gal) closeGal(); });
+document.addEventListener('keydown',e=>{
+  if(!gal.classList.contains('open')) return;
+  if(e.key==='Escape') closeGal();
+  else if(e.key==='ArrowRight') step(1);
+  else if(e.key==='ArrowLeft') step(-1);
+  else if(e.key==='Tab'){ const f=$$('button,a',gal).filter(x=>x.offsetParent!==null); const a=f[0], z=f[f.length-1];
+    if(e.shiftKey && document.activeElement===a){e.preventDefault(); z.focus();} else if(!e.shiftKey && document.activeElement===z){e.preventDefault(); a.focus();} }
+});
+let sx=null; const stage=$('#galStage');
+stage.addEventListener('pointerdown',e=>{sx=e.clientX;});
+stage.addEventListener('pointerup',e=>{ if(sx==null) return; const dx=e.clientX-sx; sx=null; if(Math.abs(dx)>40) step(dx<0?1:-1); });
+
+/* ---------------- revelar palavras ---------------- */
+function splitWords(el){
+  const out=[];
+  const walk=(node)=>{
+    [...node.childNodes].forEach(ch=>{
+      if(ch.nodeType===3){
+        const frag=document.createDocumentFragment();
+        ch.textContent.split(/(\s+)/).forEach(part=>{
+          if(!part) return;
+          if(/^\s+$/.test(part)){ frag.appendChild(document.createTextNode(part)); return; }
+          const s=document.createElement('span'); s.className='w'; s.textContent=part; frag.appendChild(s); out.push(s);
+        });
+        node.replaceChild(frag,ch);
+      } else if(ch.nodeType===1) walk(ch);
+    });
+  };
+  walk(el); return out;
+}
+const reveals=$$('.reveal').map(el=>({el,words:splitWords(el)}));
+
+/* ---------------- fios do topo (canvas) ---------------- */
+const cv=$('#fios'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1,mx=.5,my=.5,t0=performance.now();
+function sizeCanvas(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,devicePixelRatio||1); W=r.width; H=r.height; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+const TONES=['224,112,58','122,68,102','37,102,168','22,33,58'];
+const LINES=Array.from({length:16},(_,i)=>{ const k=i%7===3?0:(i%4===1?2:(i%5===2?1:3)); return {y:.12+i*.055,a:10+(i%5)*6,f:.0016+(i%4)*.0005,ph:i*1.7,sp:.00012+(i%3)*.00007,hue:TONES[k],al:[.38,.22,.3,.07][k]}; });
+function drawFios(now,scrollY){
+  if(!W) return;
+  ctx.clearRect(0,0,W,H);
+  const t=(now-t0);
+  LINES.forEach((L,i)=>{
+    ctx.beginPath();
+    const base=L.y*H - scrollY*(.08+i*.012);
+    for(let x=-10;x<=W+10;x+=12){
+      const d=Math.exp(-Math.pow((x/W-mx)*3,2))*18*(my-.5);
+      const y=base+Math.sin(x*L.f+L.ph+t*L.sp)*L.a+Math.sin(x*L.f*2.3+t*L.sp*1.7)*L.a*.35+d;
+      x===-10?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle=`rgba(${L.hue},${L.al})`; ctx.lineWidth=1; ctx.stroke();
+  });
+}
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth; my=e.clientY/innerHeight;},{passive:true});
+
+/* ---------------- fios dos projetos (svg) ---------------- */
+const proj=$('#projetos'), psvg=$('#fiosProj');
+let threads=[], pulses=[];
+function buildThreads(){
+  const sr=proj.getBoundingClientRect(); const Wd=sr.width;
+  psvg.setAttribute('viewBox',`0 0 ${Wd} ${sr.height}`); psvg.setAttribute('width',Wd); psvg.setAttribute('height',sr.height);
+  const tiles=$$('.tile',grid).map(t=>{const r=t.getBoundingClientRect(); return {x:r.left-sr.left,y:r.top-sr.top,w:r.width,h:r.height,r:parseFloat(getComputedStyle(t).borderTopLeftRadius)||24};});
+  const rows={}; tiles.forEach(t=>{const k=Math.round(t.y); (rows[k]=rows[k]||[]).push(t);});
+  let html='';
+  const xs=new Set(); tiles.forEach(t=>{xs.add(Math.round(t.x)); xs.add(Math.round(t.x+t.w));});
+  xs.forEach(x=>{html+=`<line class="guide" x1="${x}" y1="0" x2="${x}" y2="${sr.height}"/>`;});
+  const ds=[];
+  Object.values(rows).forEach(row=>{
+    row.sort((a,b)=>a.x-b.x);
+    const y=row[0].y; let d=`M -2 ${y}`;
+    row.forEach(t=>{
+      const {x,w,h,r}=t;
+      d+=` L ${x+w-r} ${y} A ${r} ${r} 0 0 1 ${x+w} ${y+r} L ${x+w} ${y+h-r} A ${r} ${r} 0 0 1 ${x+w-r} ${y+h} L ${x+r} ${y+h} A ${r} ${r} 0 0 1 ${x} ${y+h-r} L ${x} ${y+r} A ${r} ${r} 0 0 1 ${x+r} ${y} L ${x+w} ${y}`;
+    });
+    d+=` L ${Wd+2} ${y}`;
+    ds.push(d);
+    const yb=row[0].y+row[0].h; ds.push(`M ${Wd+2} ${yb} L -2 ${yb}`);
+  });
+  ds.forEach((d,i)=>{ html+=`<path class="thread" d="${d}"/>`; if(i%2===0) html+=`<path class="pulse" pathLength="1000" d="${d}" style="animation-delay:${-i*1.3}s;opacity:0"/>`; });
+  psvg.innerHTML=html;
+  threads=$$('.thread',psvg).map(p=>{const L=p.getTotalLength(); p.style.strokeDasharray=L; p.style.strokeDashoffset=RM?0:L; return {p,L};});
+  pulses=$$('.pulse',psvg);
+  if(RM) pulses.forEach(x=>x.style.opacity=1);
+  proj.classList.add('lines-on');
+}
+
+/* ---------------- loop de rolagem ---------------- */
+const band=$('#band'); let bx=0, lastY=scrollY, vel=0;
+const circle=$('#circle'), exCopy=$('#expandCopy'), expand=$('#ambiente'), dotCap=$('#dotCap');
+const topics=$$('[data-topic]'), diags=$$('.diag');
+const steps=$('#steps'), rings=$('#rings'), askHead=$('#askHead'), askLine=$('#askLine'), heroLogo=$('#heroLogo');
+function prog(el,start=.9,end=.3){ const r=el.getBoundingClientRect(); const vh=innerHeight; return clamp((vh*start - r.top)/(vh*start - vh*end)); }
+function frame(now){
+  const y=scrollY, vh=innerHeight;
+  vel=vel*.9+(y-lastY)*.1; lastY=y;
+  drawFios(now,y);
+  heroLogo.style.transform=`translate3d(0,${(y*0.12).toFixed(1)}px,0) rotate(${(y*0.008).toFixed(2)}deg)`;
+  bx-=(.35+Math.abs(vel)*.25); const bw=band.scrollWidth/2; if(-bx>bw) bx+=bw; band.style.transform=`translate3d(${bx}px,0,0)`;
+  const er=expand.getBoundingClientRect(); const ep=clamp(-er.top/(er.height-vh));
+  const diag=Math.hypot(innerWidth,vh)/64*1.08;
+  circle.style.setProperty('--s',(.35+Math.pow(clamp(ep/.55),1.6)*diag).toFixed(3));
+  dotCap.style.setProperty('--dc',(1-clamp(ep/.12)).toFixed(3));
+  exCopy.style.setProperty('--co',clamp((ep-.42)/.18).toFixed(3));
+  reveals.forEach(({el,words})=>{ const p=prog(el,.92,.42); const n=words.length; words.forEach((w,i)=>{ w.style.setProperty('--o',(.2+.8*clamp(p*n*1.05-i)).toFixed(2)); }); });
+  topics.forEach(t=>{ const ic=t.querySelector('.ticon'); if(ic) ic.style.setProperty('--d',prog(t,.85,.35).toFixed(3)); });
+  diags.forEach(d=>d.style.setProperty('--d',prog(d,.95,.5).toFixed(3)));
+  if(threads.length){ const pp=prog(proj,.95,.15); threads.forEach(({p,L},i)=>{ const local=clamp(pp*1.25-(i%2)*.18); p.style.strokeDashoffset=(L*(1-local)).toFixed(1); }); pulses.forEach(x=>x.style.opacity=pp>.95?1:0); }
+  steps.style.setProperty('--lp',prog(steps,.85,.45).toFixed(3));
+  const ap=prog(askHead,1,.2);
+  askHead.querySelector('h2').style.setProperty('--ty',((1-ap)*40).toFixed(1)+'px');
+  askLine.style.setProperty('--al',ap.toFixed(3));
+  rings.style.setProperty('--rs',(.85+ap*.25).toFixed(3)); rings.style.setProperty('--rr',(ap*40).toFixed(1)+'deg');
+  if(!RM) requestAnimationFrame(frame);
+}
+function staticPaint(){ drawFios(performance.now(),0); reveals.forEach(({words})=>words.forEach(w=>w.style.setProperty('--o',1))); }
+function init(){ sizeCanvas(); buildThreads(); if(RM){ staticPaint(); } else requestAnimationFrame(frame); }
+let rz; addEventListener('resize',()=>{clearTimeout(rz); rz=setTimeout(()=>{sizeCanvas(); buildThreads(); if(RM) staticPaint();},150);});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>buildThreads());
+addEventListener('load',()=>buildThreads());
+if('ResizeObserver' in window){ let lastH=0, rb; new ResizeObserver(()=>{ const h=document.body.scrollHeight; if(Math.abs(h-lastH)>2){ lastH=h; clearTimeout(rb); rb=setTimeout(buildThreads,60); } }).observe(document.body); }
+init();
+
+/* ---------------- botões magnéticos ---------------- */
+if(!RM && matchMedia('(hover:hover)').matches){
+  $$('.magnet').forEach(b=>{
+    b.addEventListener('pointermove',e=>{ const r=b.getBoundingClientRect(); const dx=(e.clientX-r.left-r.width/2)/r.width, dy=(e.clientY-r.top-r.height/2)/r.height; b.style.transform=`translate(${dx*8}px,${dy*6}px)`; });
+    b.addEventListener('pointerleave',()=>{ b.style.transform=''; });
+  });
+}
+
+/* ---------------- formulário ---------------- */
+const form=$('#form'), F=n=>form.elements[n];
+const QS=$$('.q',form);
+const fIdeia=$('#f-ideia'), fNome=$('#f-nome'), fWhats=$('#f-whats'), fMarca=$('#f-marca');
+const firstName=()=> (fNome.value.trim().split(/\s+/)[0]||'');
+const radio=n=>{const c=form.querySelector(`input[name="${n}"]:checked`); return c?c.value:'';};
+const checks=n=>$$(`input[name="${n}"]:checked`,form).map(c=>c.value);
+const digits=v=>v.replace(/\D/g,'');
+function maskPhone(v){
+  let d=digits(v); if(d.startsWith('55')&&d.length>11) d=d.slice(2); d=d.slice(0,11);
+  if(d.length<=2) return d?`(${d}`:'';
+  if(d.length<=6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+  if(d.length<=10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
+}
+const showMarca=()=>$('#subMarca').classList.toggle('show',!!radio('para')&&radio('para')!=='Para mim (uso pessoal)');
+fWhats.addEventListener('input',()=>{ fWhats.value=maskPhone(fWhats.value); });
+fIdeia.addEventListener('input',()=>{ $('#c-ideia').textContent=fIdeia.value.length; });
+form.addEventListener('change',e=>{ if(e.target.name==='para') showMarca(); });
+$$('.ex button',form).forEach(b=>b.addEventListener('click',()=>{ const t=$('#'+b.parentElement.dataset.for); const add=b.textContent.replace('…',' '); t.value=(t.value.trim()?t.value.trim()+'\n':'')+add; t.focus(); t.setSelectionRange(t.value.length,t.value.length); update(); }));
+
+const answered={
+  ideia:()=>fIdeia.value.trim().length>=10,
+  nome:()=>fNome.value.trim().length>=2,
+  whats:()=>{const d=digits(fWhats.value); return d.length>=10&&d.length<=11;},
+  para:()=>!!radio('para'),
+  tipo:()=>checks('tipo').length>0,
+  dor:()=>F('dor').value.trim().length>3,
+  desejo:()=>F('desejo').value.trim().length>3,
+  uso:()=>!!(radio('quem')||radio('onde')),
+  tempo:()=>!!(radio('prazo')||radio('invest'))
+};
+function update(){
+  let n=0; QS.forEach(q=>{ const ok=answered[q.dataset.q](); q.classList.toggle('done',ok); if(ok){n++; q.classList.remove('bad');} });
+  $('#railTxt').textContent=`${n} de ${QS.length} respondidas`;
+  $('#railBar').style.width=(n/QS.length*100)+'%';
+  const nm=firstName();
+  $('#qt-whats').textContent = nm ? `Obrigado, ${nm}. Qual WhatsApp usamos para continuar a conversa?` : 'Qual WhatsApp usamos para continuar a conversa?';
+  $('#qt-dor').textContent = nm ? `${nm}, qual problema essa ferramenta precisa resolver?` : 'Qual problema essa ferramenta precisa resolver?';
+  saveDraft();
+}
+form.addEventListener('input',update); form.addEventListener('change',update);
+
+const KEY='rumeyart-ideia';
+function saveDraft(){ try{ const o={}; [...form.elements].forEach(el=>{ if(!el.name) return; if(el.type==='radio'||el.type==='checkbox'){ if(el.checked)(o[el.name]=o[el.name]||[]).push(el.value);} else o[el.name]=el.value; }); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
+function loadDraft(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||'null'); if(!o) return; [...form.elements].forEach(el=>{ if(!el.name||!(el.name in o)) return; if(el.type==='radio'||el.type==='checkbox') el.checked=o[el.name].includes(el.value); else el.value=o[el.name]; }); $('#c-ideia').textContent=fIdeia.value.length; showMarca(); }catch(e){} }
+loadDraft(); update();
+
+function resumo(txt,max=260){
+  let t=txt.replace(/\s+/g,' ').trim();
+  if(t.length<=max) return t;
+  t=t.slice(0,max); const cut=t.lastIndexOf(' '); return t.slice(0,cut>120?cut:max).replace(/[,.;:\s]+$/,'')+'…';
+}
+function buildMsg(){
+  const nome=fNome.value.trim().replace(/\s+/g,' ');
+  let m=`Olá, Rumëyart! Aqui é ${nome}.\n\nMinha ideia, em resumo: ${resumo(fIdeia.value)}`;
+  if($('#incAll').checked){
+    const L=[]; const add=(k,v)=>{ if(v) L.push(`• ${k}: ${v}`); };
+    add('Para quem',radio('para')); add('Marca',$('#subMarca').classList.contains('show')?fMarca.value.trim():'');
+    add('Formato',checks('tipo').join(', '));
+    add('Problema a resolver',F('dor').value.trim().replace(/\s+/g,' '));
+    add('O que a ferramenta precisa fazer',F('desejo').value.trim().replace(/\s+/g,' '));
+    add('Quem usa',radio('quem')); add('Onde usa',radio('onde'));
+    add('Prazo',radio('prazo')); add('Investimento',radio('invest'));
+    add('Meu WhatsApp',fWhats.value.trim());
+    if(L.length) m+=`\n\nOutras respostas do formulário:\n${L.join('\n')}`;
+  }
+  return m;
+}
+function paintMsg(){ const m=buildMsg(); $('#msg').textContent=m; $('#waBtn').href=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(m)}`; }
+$('#incAll').addEventListener('change',paintMsg);
+
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  let first=null;
+  QS.filter(q=>q.hasAttribute('data-req')).forEach(q=>{ const ok=answered[q.dataset.q](); q.classList.toggle('bad',!ok); if(!ok&&!first) first=q; });
+  if(first){ first.scrollIntoView({behavior:RM?'auto':'smooth',block:'center'}); const f=first.querySelector('input,textarea'); f&&setTimeout(()=>f.focus({preventScroll:true}),RM?0:450); toast('Falta completar uma resposta obrigatória.'); return; }
+  const nm=firstName();
+  const t=$('#doneTitle'); t.innerHTML=''; t.append(`Pronto, ${nm}. Sua ideia está `); const em=document.createElement('em'); em.textContent='registrada'; t.append(em,'.');
+  paintMsg();
+  enviarCRM();
+  $('#sendRow').hidden=true; const d=$('#done'); d.classList.add('show');
+  d.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); setTimeout(()=>d.focus({preventScroll:true}),RM?0:500);
+});
+/* as respostas também seguem para o CRM da Rumëyart (Supabase) */
+const CRM_URL='https://uotxnchfvrgpxwimmefd.supabase.co/rest/v1/rpc/rumeyart_novo_pedido';
+const CRM_KEY='sb_publishable_wopZQEqU4NERsq2wqCJMXQ_hg53O5VA';
+let ultimoEnvio='';
+/* de onde veio a visita (link da bio, anúncio…): guardado na primeira página vista e enviado junto com a ideia */
+const ORIGEM=(()=>{
+  const ch=['utm_source','utm_medium','utm_campaign','utm_content'];
+  try{
+    const u=new URLSearchParams(location.search), o={};
+    ch.forEach(k=>{const v=(u.get(k)||'').trim().slice(0,80); if(v) o[k.slice(4)]=v;});
+    if(Object.keys(o).length){o.em=new Date().toISOString(); sessionStorage.setItem('rmy-origem',JSON.stringify(o)); return o;}
+    return JSON.parse(sessionStorage.getItem('rmy-origem')||'null');
+  }catch(e){return null;}
+})();
+async function enviarCRM(){
+  const st=$('#crmSt');
+  const respostas={para:radio('para'),marca:$('#subMarca').classList.contains('show')?fMarca.value.trim():'',tipo:checks('tipo').join(', '),
+    dor:F('dor').value.trim(),desejo:F('desejo').value.trim(),quem:radio('quem'),onde:radio('onde'),prazo:radio('prazo'),invest:radio('invest'),whats:fWhats.value.trim()};
+  if(ORIGEM) respostas.origem=ORIGEM;
+  const corpo={p_nome:fNome.value.trim().replace(/\s+/g,' '),p_whatsapp:fWhats.value.trim(),p_ideia:fIdeia.value.trim(),p_respostas:respostas};
+  const assinatura=JSON.stringify(corpo);
+  if(assinatura===ultimoEnvio) return;
+  st.className='crm-st'; st.textContent='Registrando sua ideia…';
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),9000);
+  try{
+    const r=await fetch(CRM_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:CRM_KEY,Authorization:'Bearer '+CRM_KEY},body:assinatura,signal:ctrl.signal});
+    const txt=await r.text();
+    if(r.ok){ ultimoEnvio=assinatura; const n=parseInt(txt,10); st.className='crm-st ok'; st.textContent=`Recebemos sua ideia${n?` (pedido nº ${n})`:''}. O WhatsApp só adianta a conversa.`; try{localStorage.removeItem(KEY);}catch(e){} return; }
+    if(/pedido_repetido/.test(txt)){ ultimoEnvio=assinatura; st.className='crm-st ok'; st.textContent='Sua ideia já tinha chegado para nós há instantes.'; return; }
+    throw new Error(txt);
+  }catch(e){ st.className='crm-st'; st.textContent='Para garantir que sua ideia chegue, envie pelo WhatsApp abaixo.'; }
+  finally{ clearTimeout(t); }
+}
+$('#editBack').addEventListener('click',()=>{ $('#done').classList.remove('show'); $('#sendRow').hidden=false; QS[0].scrollIntoView({behavior:RM?'auto':'smooth',block:'center'}); });
+$('#copyMsg').addEventListener('click',()=>{
+  const m=$('#msg').textContent;
+  const fallback=()=>{ const r=document.createRange(); r.selectNodeContents($('#msg')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Mensagem selecionada. É só copiar.'); };
+  try{ navigator.clipboard.writeText(m).then(()=>toast('Mensagem copiada'),fallback); }catch(e){ fallback(); }
+});
+let tt; function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2400); }
+})();
+</script>
+
+</body>
+</html>

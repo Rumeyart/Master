@@ -1,0 +1,43 @@
+# Backup diário do banco do CRM Rumëyart (tabelas rumeyart_*).
+# Para ativar: no GitHub, Settings → Secrets and variables → Actions → New repository secret
+#   Nome: SUPABASE_DB_URL
+#   Valor: a "connection string" do Supabase (Connect → Session pooler), com a senha do banco.
+# Cada execução guarda o arquivo por 30 dias em Actions → (execução) → Artifacts.
+name: Backup diário do banco
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # todo dia às 03:00 de Brasília
+  workflow_dispatch: {}    # permite rodar na hora, pelo botão "Run workflow"
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar segredo
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then echo "Segredo SUPABASE_DB_URL não configurado — backup ignorado."; exit 0; fi
+      - name: Instalar pg_dump 17
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+      - name: Gerar backup
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          [ -z "$SUPABASE_DB_URL" ] && exit 0
+          DATA=$(date -u +%Y-%m-%d)
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges -t 'public.rumeyart_*' -Fc -f "rumeyart-$DATA.dump"
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges -t 'public.rumeyart_*' --data-only --inserts -f "rumeyart-$DATA.sql"
+          ls -la rumeyart-*
+      - name: Guardar backup
+        if: ${{ hashFiles('rumeyart-*.dump') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-rumeyart
+          path: rumeyart-*
+          retention-days: 30
