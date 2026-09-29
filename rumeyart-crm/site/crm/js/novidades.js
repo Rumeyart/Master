@@ -1,5 +1,13 @@
 // Novidades do CRM (a mais nova primeiro). A cada entrega, acrescente um bloco no topo com itens curtos.
 export const NOVIDADES = [
+  {id: '2026-09-28', data: '2026-09-28', itens: [
+    'Novo menu Social e anúncios',
+    'Plano de ação de divulgação com passo a passo',
+    'Calendário de posts com resultados',
+    'Campanhas do Meta Ads com custo por conversa',
+    'Diário de aprendizados e a marca editável',
+    'Pedidos do site mostram de onde veio a visita'
+  ]},
   {id: '2026-09-27b', data: '2026-09-27', itens: [
     'Sino de notificações no topo',
     'Aba Notificações: novidades e atividade do CRM',

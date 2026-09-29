@@ -55,7 +55,16 @@ export const STATUS = [
 ];
 export const statusNome = s => (STATUS.find(x => x[0] === s) || [s, s])[1];
 export const TIPOS = [['pessoal','Uso pessoal'],['empresa','Empresa'],['projeto','Projeto ou coletivo'],['presente','Presente'],['outro','Outro']];
-export const ORIGENS = [['site','Site'],['instagram','Instagram'],['whatsapp','WhatsApp'],['indicacao','Indicação'],['google','Google'],['cliente_antigo','Cliente antigo'],['evento','Evento'],['outro','Outro']];
+export const ORIGENS = [['site','Site'],['instagram','Instagram'],['anuncio','Anúncio (Meta Ads)'],['whatsapp','WhatsApp'],['indicacao','Indicação'],['google','Google'],['cliente_antigo','Cliente antigo'],['evento','Evento'],['outro','Outro']];
+// de onde veio o pedido do site (parâmetros utm_ do link): 'anúncio · captacao', 'bio do Instagram'…
+export function origemPedido(r){
+  const o = r && r.origem; if(!o || typeof o !== 'object') return '';
+  const fonte = String(o.source || '').toLowerCase(), meio = String(o.medium || '').toLowerCase();
+  let t = /anuncio|paid|cpc|ads/.test(meio) || /^(meta|facebook|fb)$/.test(fonte) ? 'anúncio' : meio === 'bio' ? 'bio do Instagram' : fonte === 'instagram' || fonte === 'ig' ? 'Instagram' : fonte || meio || 'link';
+  if(o.campaign) t += ' · ' + o.campaign;
+  return t;
+}
+export const pedidoDeAnuncio = r => { const o = r && r.origem; return !!(o && (/anuncio|paid|cpc|ads/i.test(o.medium || '') || /^(meta|facebook|fb)$/i.test(o.source || ''))); };
 export const CATEGORIAS = [['app','App'],['sistema','Sistema / CRM'],['site','Site ou catálogo'],['jogo','Jogo'],['documento','Documento interativo'],['manutencao','Manutenção'],['hospedagem','Hospedagem'],['consultoria','Consultoria'],['outro','Outro']];
 export const AREAS = [['comercial','Comercial'],['desenvolvimento','Desenvolvimento'],['administrativo','Administrativo'],['financeiro','Financeiro']];
 export const rot = (lista, v) => (lista.find(x => x[0] === v) || [v, v || '—'])[1];

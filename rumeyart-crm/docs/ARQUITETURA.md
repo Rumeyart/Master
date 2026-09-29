@@ -26,6 +26,12 @@ CRM (/crm, PWA)    ──supabase-js (login e-mail/senha)───────�
 | `fornecedores`, `recursos`, `precos`, `compras` | compras e cotações |
 | `push_config`, `push_inscricoes`, `push_fila` | notificações |
 | `atividade` | registro automático (gatilho em clientes, projetos, pedidos, propostas, contratos, tarefas, financeiro, compras, serviços, cofre, configurações e acessos): quem criou, alterou ou apagou o quê. Só leitura pelo app; guarda 180 dias. Do cofre entra só o nome do projeto e quais campos mudaram, nunca login ou senha |
+| `mkt_marca` | uma linha (`id = 1`) com a marca em `dados` (jsonb): frase-guia, promessa, provas, tom, públicos, pilares, cores, textos-base |
+| `mkt_acoes` | plano de ação de divulgação por `etapa`; `concluida_em` preenchido por gatilho |
+| `mkt_posts` | calendário: data, formato, pilar, status (ideia → produção → agendado → publicado), links, roteiro, legenda e métricas; `campanha_id` quando impulsionado |
+| `mkt_campanhas` | campanhas do Meta Ads; `codigo` = `utm_campaign` do link do site |
+| `mkt_resultados` | números de cada campanha por período (valor em centavos); métricas derivadas são calculadas na tela |
+| `mkt_aprendizados` | diário de testes ligado a post e/ou campanha |
 | `cofre`, `cofre_config`, `cofre_sessoes` | cofre de acessos: sem acesso direto pela API; só pelas funções `rumeyart_cofre_*` (PIN com bcrypt, sessão de 10 min renovada a cada uso, login/senha cifrados com `pgp_sym_encrypt`) |
 
 ### Formulário do site
@@ -33,6 +39,7 @@ CRM (/crm, PWA)    ──supabase-js (login e-mail/senha)───────�
 visitantes. Ela valida os campos, bloqueia envio repetido do mesmo WhatsApp por 2 minutos,
 reaproveita o cliente pelo WhatsApp, cria o projeto, o pedido, o registro no histórico e a tarefa,
 e devolve o número do pedido. Chaves de `p_respostas`: `para, marca, tipo, dor, desejo, quem, onde, prazo, invest, whats`.
+Quando a visita chegou por um link com `utm_`, o site acrescenta `origem: {source, medium, campaign, content, em}` (guardado na sessão do navegador).
 
 ### Financeiro
 Valores em centavos (`valor_centavos`). Tipos: `receita`, `despesa`, `transferencia`,
@@ -53,5 +60,5 @@ grava `id_externo` (FITID do OFX ou data+valor+descrição do CSV) com índice �
 
 ## Migrações
 Já aplicadas no projeto Supabase `uotxnchfvrgpxwimmefd`. Os arquivos em `supabase/migrations`
-servem de registro e para recriar o banco em outro projeto (rodar em ordem 001 → 006; a 003
+servem de registro e para recriar o banco em outro projeto (rodar em ordem 001 → 007; a 003
 precisa das chaves VAPID e do segredo, preenchidos direto na tabela `rumeyart_push_config`).

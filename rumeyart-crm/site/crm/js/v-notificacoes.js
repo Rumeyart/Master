@@ -25,7 +25,11 @@ const TAB = {
   recursos: ['Recurso', 0, 'recursos', 'recurso', () => 'compras'],
   cofre: ['Acesso do cofre', 0, 'acessos do cofre', 'cofre', () => 'administrativo'],
   config: ['Configurações', 1, 'configurações', 'config', () => 'config'],
-  admins: ['Acesso ao CRM', 0, 'acessos ao CRM', 'cadeado', () => 'config']
+  admins: ['Acesso ao CRM', 0, 'acessos ao CRM', 'cadeado', () => 'config'],
+  mkt_posts: ['Post', 0, 'posts', 'calendario', () => 'marketing?aba=calendario'],
+  mkt_campanhas: ['Campanha', 1, 'campanhas', 'alvo', () => 'marketing?aba=campanhas'],
+  mkt_aprendizados: ['Aprendizado', 0, 'aprendizados', 'lampada', () => 'marketing?aba=aprendizados'],
+  mkt_marca: ['Marca', 1, 'marca', 'marca', () => 'marketing?aba=marca']
 };
 const ORDEM = Object.keys(TAB);
 const CAMPOS = {titulo: 'título', vence_em: 'prazo', valor_centavos: 'valor', descricao: 'descrição', data: 'data', categoria_id: 'categoria', conta_id: 'conta',

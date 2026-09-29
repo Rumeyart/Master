@@ -1,6 +1,6 @@
 // Pedidos do site: caixa de entrada com o briefing completo de cada ideia
 import {T, q, config} from './db.js';
-import {esc, dataHoraBR, haQuanto, whatsLink, primeiroNome, aviso, traduzErro, confirmar, janela} from './util.js';
+import {esc, dataHoraBR, haQuanto, whatsLink, primeiroNome, aviso, traduzErro, confirmar, janela, origemPedido} from './util.js';
 import {CAMPOS_BRIEFING} from './proposta-doc.js';
 import {ICONES} from './icones.js';
 import {mensagemDoPasso} from './passos.js';
@@ -67,12 +67,13 @@ function cartao(p, eu){
   const msg = `Olá, ${primeiroNome(p.nome)}! Aqui é ${eu}, da Rumëyart. Recebi a sua ideia (“${resumo}”) e quero entender melhor. Podemos marcar uma conversa rápida esta semana?`;
   const w = whatsLink(p.whatsapp, mensagemDoPasso('Responder pedido do site', {nome: p.nome, projeto: p.oportunidade?.titulo}) || msg);
   const chips = ['para', 'tipo', 'prazo', 'invest'].map(k => r[k]).filter(Boolean);
+  const via = origemPedido(r);
   const stTag = p.status === 'novo' ? '<span class="tag novo st">Novo</span>' : `<span class="tag ${p.status} st">${{lido: 'Lido', respondido: 'Respondido', descartado: 'Descartado'}[p.status]}</span>`;
   return `<article class="pedido ${p.status === 'novo' ? 'novo' : ''}" data-id="${p.id}">
     <div class="n">Nº<b>${p.numero}</b></div>
     <div style="min-width:0;">
       <h3>${esc(p.nome)} ${stTag}</h3>
-      <div class="muted" style="font-size:13px;margin-bottom:.5rem;"><span title="${dataHoraBR(p.criado_em)}">${haQuanto(p.criado_em)}</span> · ${esc(p.whatsapp)}${r.marca ? ' · ' + esc(r.marca) : ''}</div>
+      <div class="muted" style="font-size:13px;margin-bottom:.5rem;"><span title="${dataHoraBR(p.criado_em)}">${haQuanto(p.criado_em)}</span> · ${esc(p.whatsapp)}${r.marca ? ' · ' + esc(r.marca) : ''}${via ? ` · <span class="pill" title="De onde veio a visita">via ${esc(via)}</span>` : ''}</div>
       <div class="ideia">“${esc(p.ideia)}”</div>
       ${chips.length ? `<div class="chips">${chips.map(c => `<span class="pill">${esc(c)}</span>`).join('')}</div>` : ''}
       <details><summary>Ver todas as respostas</summary>

@@ -149,7 +149,7 @@ async function exportar(tipo){
   const nome = n => `rumeyart-${n}-${hoje}`;
   if(tipo === 'tudo'){
     const dados = {exportado_em: new Date().toISOString()};
-    for(const n of ['clientes', 'oport', 'pedidos', 'propostas', 'pdfs', 'hist', 'tarefas', 'servicos', 'config', 'fornecedores', 'recursos', 'precos', 'compras', 'modelos', 'contratos', 'contas', 'cartoes', 'categorias', 'lanc']) dados[T[n]] = await tudo(T[n]);
+    for(const n of ['clientes', 'oport', 'pedidos', 'propostas', 'pdfs', 'hist', 'tarefas', 'servicos', 'config', 'fornecedores', 'recursos', 'precos', 'compras', 'modelos', 'contratos', 'contas', 'cartoes', 'categorias', 'lanc', 'mktMarca', 'mktAcoes', 'mktPosts', 'mktCampanhas', 'mktResultados', 'mktAprendizados']) dados[T[n]] = await tudo(T[n]);
     baixar(nome('crm-completo') + '.json', JSON.stringify(dados, null, 1), 'application/json'); aviso('Cópia completa baixada.'); return;
   }
   const cli = '*, cliente:rumeyart_clientes(nome)';

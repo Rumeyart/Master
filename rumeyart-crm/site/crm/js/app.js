@@ -18,6 +18,7 @@ pwa.registrarSW();
 const GRUPOS = [
   ['Comercial', [['painel', 'Painel'], ['pedidos', 'Pedidos do site'], ['funil', 'Funil'], ['clientes', 'Clientes'], ['propostas', 'Propostas'], ['contratos', 'Contratos']]],
   ['Operação', [['tarefas', 'Tarefas'], ['administrativo', 'Administrativo'], ['servicos', 'Serviços'], ['compras', 'Compras']]],
+  ['Divulgação', [['marketing', 'Social e anúncios']]],
   ['Gestão', [['financeiro', 'Financeiro'], ['config', 'Configurações']]]
 ];
 const MOBILE = [['painel', 'Painel'], ['pedidos', 'Pedidos'], ['funil', 'Funil'], ['financeiro', 'Finanças']];
@@ -30,7 +31,7 @@ const VISTAS = {
   contratos: () => import('./v-contratos.js'), contrato: () => import('./v-contrato.js'),
   tarefas: () => import('./v-tarefas.js'), administrativo: () => import('./v-admin.js'), servicos: () => import('./v-servicos.js'), compras: () => import('./v-compras.js'),
   financeiro: () => import('./v-financeiro.js'), config: () => import('./v-config.js'), busca: () => import('./v-busca.js'),
-  notificacoes: () => import('./v-notificacoes.js')
+  notificacoes: () => import('./v-notificacoes.js'), marketing: () => import('./v-marketing.js')
 };
 const PAI = {cliente: 'clientes', proposta: 'propostas', contrato: 'contratos', busca: '', notificacoes: ''};
 
