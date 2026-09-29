@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rumëyart Criação</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Apps, sistemas, jogos e documentos feitos sob medida a partir da sua ideia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="novo.css">
+<style>
+/* galeria e formulário herdados do site atual */
+/* ---------- galeria ---------- */
+.gal{position:fixed;inset:0;z-index:100;display:none;background:rgba(22,33,58,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:calc(env(safe-area-inset-top,0px) + 18px) var(--gutter) calc(env(safe-area-inset-bottom,0px) + 18px)}
+.gal.open{display:flex;align-items:center;justify-content:center;animation:fade .4s var(--ease)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.gal-panel{position:relative;width:min(1180px,100%);height:min(760px,100%);background:var(--paper);border-radius:30px;box-shadow:0 40px 120px -30px rgba(10,16,30,.6);display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);overflow:hidden;animation:rise .6s var(--ease)}
+@keyframes rise{from{transform:translateY(30px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.gal-stage{position:relative;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(80% 70% at 50% 45%,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%),var(--sand-2);min-height:0;touch-action:pan-y}
+.frame{position:relative;max-height:100%;max-width:100%;display:flex;transition:opacity .35s,transform .5s var(--ease)}
+.frame.swap{opacity:0;transform:translateX(var(--dx,20px))}
+.frame.phone{height:100%;aspect-ratio:560/1212;border-radius:34px;padding:9px;background:#10151C;box-shadow:0 30px 70px -30px rgba(10,16,30,.7)}
+.frame.phone img{border-radius:26px}
+.frame.desk{width:100%;flex-direction:column;border-radius:14px;background:#10151C;box-shadow:0 30px 70px -30px rgba(10,16,30,.7);overflow:hidden}
+.frame.desk::before{content:"";height:26px;flex:none;background:radial-gradient(circle at 16px 13px,#3a4247 4px,transparent 5px),radial-gradient(circle at 32px 13px,#3a4247 4px,transparent 5px),radial-gradient(circle at 48px 13px,#3a4247 4px,transparent 5px),#0b1114}
+.frame img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;max-width:none}
+.frame.desk img{height:auto}
+.illu{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;background:var(--paper);color:var(--ink-2);padding:6px 10px;border-radius:999px;white-space:nowrap;box-shadow:inset 0 0 0 1px var(--line)}
+.gal-nav{position:absolute;inset:auto 18px 18px auto;display:flex;gap:8px}
+.gal-btn{width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;transition:all .3s}
+.gal-btn:hover{background:var(--ink);color:var(--sand)}
+.gal-btn svg{width:18px;height:18px}
+.gal-info{padding:34px clamp(22px,3vw,40px);display:flex;flex-direction:column;gap:18px;overflow:auto}
+.gal-info .glogo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:var(--c);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 50%,transparent)}
+.gal-info .glogo svg{width:26px;height:26px}
+.gal-info h3{font-size:clamp(30px,3.4vw,44px);line-height:1}
+.gal-info .gsum{color:var(--ink-2);font-size:15px}
+.strengths{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.strengths button{all:unset;cursor:pointer;display:grid;grid-template-columns:22px 1fr;gap:12px;padding:12px;border-radius:14px;transition:background .3s}
+.strengths button:hover{background:var(--sand)}
+.strengths button:focus-visible{outline:2px solid var(--blue)}
+.strengths .bul{width:9px;height:9px;border-radius:50%;margin-top:8px;box-shadow:inset 0 0 0 1px var(--mute);transition:all .3s}
+.strengths b{display:block;font-weight:500;font-size:15px;color:var(--ink-2)}
+.strengths span{display:block;font-size:13.5px;color:var(--mute);line-height:1.5;max-height:0;overflow:hidden;transition:max-height .5s var(--ease)}
+.strengths .on{background:var(--sand)}
+.strengths .on b{color:var(--ink)}
+.strengths .on .bul{background:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 22%,transparent)}
+.strengths .on span{max-height:120px;margin-top:4px}
+.gal-foot{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding-top:10px}
+.gal-count{font-family:var(--f-mono);font-size:12px;color:var(--mute);letter-spacing:.1em}
+.gal-close{position:absolute;right:16px;top:16px;z-index:3}
+@media (max-width:860px){
+  .gal{padding:0}
+  .gal-panel{height:100%;width:100%;border-radius:0;grid-template-columns:1fr;grid-template-rows:minmax(0,56%) minmax(0,1fr)}
+  .gal-stage{padding:calc(env(safe-area-inset-top,0px) + 54px) 16px 30px}
+  .gal-info{padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 18px);gap:12px}
+  .gal-info .glogo{display:none}
+  .gal-nav{right:12px;bottom:12px}
+  .gal-btn{width:42px;height:42px}
+}
+
+
+/* ---------- formulário ---------- */
+.ask{position:relative;padding-block:clamp(90px,14vh,150px) clamp(60px,10vh,110px);overflow:hidden;background:var(--paper);border-top:1px solid var(--line-soft)}
+.rings{position:absolute;right:-18vw;top:40px;width:min(90vw,980px);aspect-ratio:1;pointer-events:none;transform:scale(var(--rs,1)) rotate(var(--rr,0deg))}
+.rings circle{fill:none;stroke:rgba(22,33,58,.07)}
+.rings circle:nth-child(2){stroke:rgba(224,112,58,.16)}
+.rings circle:nth-child(4){stroke:rgba(37,102,168,.14)}
+.ask-head{position:relative;max-width:1100px}
+.ask-head h2{font-size:clamp(34px,5vw,72px);line-height:1.05;transform:translateY(var(--ty,0))}
+.ask-head h2 em{color:var(--blue)}
+.ask-head h2 .u{color:var(--orange-deep);font-style:italic}
+.ask-line{height:1.5px;background:linear-gradient(90deg,var(--orange),var(--plum),var(--blue),transparent);width:calc(var(--al,1) * 100%);margin-top:40px}
+
+.form{position:relative;margin-top:clamp(36px,6vh,60px)}
+.progress{position:sticky;top:calc(env(safe-area-inset-top,0px) + 112px);z-index:5;margin:0 auto 34px;width:max-content;max-width:100%;display:flex;align-items:center;gap:14px;padding:10px 16px;border-radius:999px;background:rgba(251,248,243,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px var(--line),0 10px 30px -20px rgba(22,33,58,.4)}
+.progress .rail-bar{width:160px;height:3px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.progress .rail-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--blue));transition:width .5s var(--ease)}
+.progress .rail-txt{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);letter-spacing:.06em;white-space:nowrap}
+@media (max-width:860px){.progress{top:calc(env(safe-area-inset-top,0px) + 94px)}.progress .rail-bar{width:100px}}
+
+.qs{display:flex;flex-direction:column;gap:clamp(28px,5vh,56px)}
+.qrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center}
+.qrow:nth-child(even) .q{order:2}
+@media (max-width:860px){.qrow{grid-template-columns:1fr;gap:14px}.qrow:nth-child(even) .q{order:0}}
+.q{scroll-margin-top:190px;position:relative;background:var(--sand);border-radius:22px;padding:clamp(16px,2vw,24px);box-shadow:inset 0 0 0 1px var(--line-soft);transition:box-shadow .4s,background .4s;max-width:560px;width:100%}
+.qrow:nth-child(even) .q{justify-self:end}
+.q:focus-within{box-shadow:inset 0 0 0 1px var(--line),0 20px 50px -30px rgba(37,102,168,.45);background:#FFFDF9}
+.q.done .qn{background:var(--ink);color:var(--sand);box-shadow:none}
+.q-top{display:flex;gap:12px;align-items:flex-start}
+.qn{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;color:var(--mute);box-shadow:inset 0 0 0 1px var(--line);transition:all .35s;margin-top:1px}
+.q .qt{display:block;font-family:var(--f-display);font-size:clamp(19px,1.6vw,22px);line-height:1.2;color:var(--ink)}
+.q .qh{font-size:13px;color:var(--mute);margin-top:4px;line-height:1.5}
+.q .qbody{margin-top:14px;margin-left:38px}
+@media (max-width:560px){.q .qbody{margin-left:0}}
+.opt{font-weight:400;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-left:6px}
+.inp{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink);font:inherit;font-size:15.5px;padding:8px 2px 10px;border-radius:0;transition:border-color .3s}
+.inp::placeholder{color:#8A8F9B}
+.inp:focus{outline:none;border-color:var(--blue)}
+textarea.inp{resize:vertical;min-height:92px;line-height:1.55;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--paper)}
+textarea.inp:focus{border-color:var(--blue)}
+.inp.big{min-height:120px}
+.count{font-family:var(--f-mono);font-size:10.5px;color:var(--mute);text-align:right;margin-top:5px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{position:relative;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border-radius:999px;padding:8px 13px;font-size:13.5px;color:var(--ink-2);background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);transition:all .3s var(--ease);user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip .ck{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--mute);display:grid;place-items:center;transition:all .3s}
+.chip .ck svg{width:8px;height:8px;opacity:0;transform:scale(.4);transition:all .3s var(--ease)}
+.chip:hover{box-shadow:inset 0 0 0 1px var(--ink-2);color:var(--ink)}
+.chip:has(input:checked){background:var(--ink);color:var(--sand);box-shadow:none}
+.chip:has(input:checked) .ck{background:var(--orange);box-shadow:none}
+.chip:has(input:checked) .ck svg{opacity:1;transform:none;color:var(--orange-ink)}
+.chip:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
+.sub-q{margin-top:14px;display:none}
+.sub-q.show{display:block;animation:fade .4s}
+.sub-q label{font-size:13px;color:var(--ink-2)}
+.row2{display:grid;grid-template-columns:1fr;gap:14px}
+.row2 .lbl{font-size:13px;color:var(--ink-2);margin-bottom:8px}
+.ex{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ex button{border:0;cursor:pointer;background:var(--sand-2);color:var(--ink-2);font-size:12px;padding:5px 10px;border-radius:999px;transition:all .25s}
+.ex button:hover{background:var(--ink);color:var(--sand)}
+.err{color:var(--err);font-size:12.5px;margin-top:6px;display:none}
+.q.bad .err{display:block}
+.q.bad{box-shadow:inset 0 0 0 1px rgba(179,64,28,.55)}
+
+/* esquemas de resposta ideal */
+.ideal{position:relative;max-width:520px;width:100%;justify-self:center}
+.ideal figcaption{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.ideal figcaption::before{content:"";width:18px;height:1px;background:var(--orange)}
+.diag{display:block;width:100%;height:auto}
+.diag text{font-family:var(--f-body);font-size:12px;fill:var(--ink-2)}
+.diag .t-strong{font-weight:500;fill:var(--ink)}
+.diag .t-light{fill:var(--sand);font-weight:500}
+.diag .t-mono{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;fill:var(--mute)}
+.ideal{margin:0}
+
+.send-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center;margin-top:24px;padding:8px 4px}
+.send-row p{color:var(--mute);font-size:13.5px;max-width:42ch}
+
+.crm-st{font-size:13px;color:var(--mute,#6b6f7b);margin:-4px 0 16px;min-height:1em}.crm-st.ok{color:#2F7D55}.crm-st.ok::before{content:'✓ ';font-weight:600}
+.done-card{scroll-margin-top:140px;display:none;max-width:780px;margin:24px auto 0;background:var(--sand);border-radius:28px;padding:clamp(22px,3.4vw,40px);box-shadow:inset 0 0 0 1px var(--line),0 30px 70px -40px rgba(22,33,58,.45)}
+.done-card.show{display:block;animation:rise .7s var(--ease)}
+.done-card h3{font-size:clamp(30px,3.6vw,46px);line-height:1.04}
+.done-card h3 em{color:var(--blue)}
+.done-card .dsub{color:var(--ink-2);margin-top:12px;max-width:56ch;font-size:15px}
+.msg{margin-top:10px;background:var(--paper);border-radius:18px;padding:16px 18px;box-shadow:inset 0 0 0 1px var(--line-soft);white-space:pre-wrap;font-size:14px;line-height:1.6;color:var(--ink-2);max-height:280px;overflow:auto}
+.msg-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.toggle{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--ink-2);margin-top:16px}
+.toggle input{position:absolute;opacity:0}
+.toggle .tr{width:40px;height:24px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);position:relative;transition:background .3s;background:var(--paper)}
+.toggle .tr::after{content:"";position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--mute);transition:all .35s var(--ease)}
+.toggle input:checked + .tr{background:var(--ink)}
+.toggle input:checked + .tr::after{transform:translateX(16px);background:var(--sky)}
+.toggle input:focus-visible + .tr{outline:2px solid var(--blue);outline-offset:2px}
+.done-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:24px}
+.btn-wa{--bg:#1FAF63;--fg:#04170C}
+.btn-wa .dot{background:#04170C;color:#5BE39A}
+.btn-wa::before{content:"";position:absolute;z-index:-1;right:8px;top:50%;width:36px;height:36px;margin-top:-18px;border-radius:50%;background:#43C981;transform:scale(0);transition:transform .6s var(--ease)}
+.btn-wa:hover::before{transform:scale(14)}
+.num{font-family:var(--f-mono);font-size:14px;color:var(--ink-2);user-select:all}
+.linkish{background:none;border:0;cursor:pointer;color:var(--mute);text-decoration:underline;text-underline-offset:3px;font-size:14px;padding:6px}
+.linkish:hover{color:var(--ink)}
+
+
+</style>
+<link rel="icon" type="image/png" href="../crm/icones/favicon-64.png">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script src="novo.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-in">
+    <img src="../img/rumeyart-simbolo.webp" alt="" width="180" height="142">
+    <p><span>Da ideia à ferramenta.</span></p>
+    <div class="bar"><i></i></div>
+  </div>
+</div>
+
+<div class="cur" id="cur" aria-hidden="true"><span id="curTxt"></span></div>
+
+<header class="hdr" id="hdr">
+  <div class="hdr-in">
+    <div class="hdr-l">
+      <div class="pill">
+        <a class="logo" href="#topo" aria-label="Rumëyart Criação, início"><img src="../img/rumeyart-marca.webp" alt="Rumëyart Criação" width="94" height="30"></a>
+        <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="mega" aria-label="Abrir menu"><i><b></b><b></b><b></b></i></button>
+      </div>
+      <div class="mega" id="mega">
+        <div>
+          <div class="eyebrow">Navegar</div>
+          <nav aria-label="Seções">
+            <a href="#fazemos">O que fazemos</a>
+            <a href="#como">Como funciona</a>
+            <a href="#projetos">Projetos</a>
+            <a href="#ideia">Contar minha ideia</a>
+          </nav>
+        </div>
+        <div>
+          <div class="eyebrow">Projetos em uso · abrir</div>
+          <div class="apps" id="megaApps"></div>
+        </div>
+      </div>
+    </div>
+    <div class="pill">
+      <a class="lnk" href="#projetos">Projetos</a>
+      <a class="cta" href="#ideia" data-cursor="Leva 5 minutos">Contar minha ideia</a>
+    </div>
+  </div>
+</header>
+
+<main id="topo">
+  <section class="hero" aria-labelledby="h-hero">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="hero-fallback" id="heroFallback" hidden></div>
+    <div class="hero-sym" id="heroSym" aria-hidden="true"><img src="../img/rumeyart-simbolo.webp" alt="" width="360" height="284"></div>
+    <div class="hero-in wrap" id="conteudo">
+      <div class="eyebrow">Rumëyart Criação · apps, sistemas, jogos e documentos</div>
+      <h1 id="h-hero" style="margin-top:18px"><span class="ln"><span>Ideias viram</span></span><span class="ln"><span><em>ferramentas.</em></span></span></h1>
+      <div class="hero-row">
+        <p class="lede">Criamos a ferramenta que a sua rotina pede: sob medida, pronta para usar no celular e no computador, e com espaço para crescer.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary magnet" href="#ideia">Contar minha ideia<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+          <a class="btn btn-ghost" href="#projetos">Ver projetos</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll" aria-hidden="true"><i></i>role</div>
+  </section>
+
+  <section class="ticker" aria-label="Projetos em uso">
+    <div class="eyebrow">Projetos da Rumëyart em uso real</div>
+    <div class="tk"><div class="tk-track" id="tkTrack"></div></div>
+  </section>
+
+  <section class="statement wrap" aria-label="O que a Rumëyart faz">
+    <p class="reveal" id="frase">A Rumëyart cria <span class="chip-img" aria-hidden="true"><img src="../img/projetos/ac1.webp" alt=""></span> apps, <span class="chip-img" aria-hidden="true"><img src="../img/projetos/sb3.webp" alt=""></span> sistemas, <span class="chip-img" aria-hidden="true"><img src="../img/projetos/cm_d_home.webp" alt=""></span> jogos e <span class="chip-img doc" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1.5h5.5L12.5 4.5v10h-8.5z"/><path d="M9.5 1.5v3h3M6 8h4.5M6 11h4.5"/></svg></span> documentos que começam na sua rotina e terminam <em>instalados</em> no seu celular.</p>
+  </section>
+
+  <section class="story" id="fazemos" aria-label="O que fazemos">
+    <div class="story-sticky">
+      <div>
+        <div class="st-wrap">
+          <div class="st on" data-st="0">
+            <div class="eyebrow">Existe uma ferramenta para isso</div>
+            <h2 class="h2">Se a tarefa se repete, ela pode virar <em>app.</em></h2>
+            <p class="lede">Estudos, finanças, catálogo, agenda, propostas ou um jogo com as regras da sua turma. Se o processo existe, dá para desenhar.</p>
+          </div>
+          <div class="st" data-st="1">
+            <div class="eyebrow">Do seu jeito</div>
+            <h2 class="h2">Suas cores, seus nomes, suas <em>regras.</em></h2>
+            <p class="lede">Cada detalhe segue o seu uso. Você toca nas primeiras telas e ajusta antes da versão final. Experimente os controles ao lado.</p>
+          </div>
+          <div class="st" data-st="2">
+            <div class="eyebrow">Cresce com o uso</div>
+            <h2 class="h2">Melhorias chegam como <em>atualização.</em></h2>
+            <p class="lede">Você usa, sugere e a ferramenta evolui. Os dados continuam onde estão e ninguém precisa refazer conta.</p>
+          </div>
+          <div class="st-nav" aria-hidden="true"><b class="on" data-nav="0">01</b><b data-nav="1">02</b><b data-nav="2">03</b></div>
+        </div>
+      </div>
+      <div class="sframe" id="frame">
+        <div class="sframe-bar"><span class="tg" id="frameTag">Biblioteca · possibilidades</span><span class="x"></span></div>
+        <div class="scene on" data-sc="0">
+          <div class="lib" id="lib"></div>
+        </div>
+        <div class="scene" data-sc="1">
+          <div class="tune">
+            <div class="tune-ctl">
+              <div><span class="lb">Cor principal</span><div class="sw" id="sw"></div></div>
+              <div><label for="tnNome">Nome do app</label><input type="text" id="tnNome" value="Meu Estúdio" maxlength="18"></div>
+              <div><label for="tnRaio">Cantos</label><input type="range" id="tnRaio" min="2" max="26" value="14"></div>
+              <div class="tg-row"><span class="lb" style="margin:0">Tema escuro</span><button type="button" class="sw-toggle" id="tnTema" aria-pressed="false" aria-label="Tema escuro"></button></div>
+            </div>
+            <div class="tune-prev">
+              <div class="ph" id="ph">
+                <div class="ph-top"><span id="phNome">Meu Estúdio</span><i></i></div>
+                <div class="ph-hero"><small>Aulas desta semana</small><b>12 agendadas</b></div>
+                <div class="ph-row"><div class="ph-card">Alunos<i style="--w:70%"></i></div><div class="ph-card">Recebido<i style="--w:45%"></i></div></div>
+                <div class="ph-list"><span>Ana · terça 18h</span><span>Bruno · quarta 7h</span><span>Carla · sexta 19h</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="scene" data-sc="2">
+          <div class="news">
+            <div class="nv"><span class="v">v1.0</span><div><b>Lançamento</b><small>Agenda, alunos e cobranças</small></div></div>
+            <div class="nv" style="transition-delay:.12s"><span class="v">v1.1</span><div><b>Relatório do mês</b><small>Quanto entrou e quem está em dia</small></div></div>
+            <div class="nv" style="transition-delay:.24s"><span class="v">v1.2</span><div><b>Aviso no celular</b><small>Lembrete antes de cada aula</small></div><span class="novo">novo</span></div>
+            <div class="upd"><b>Nova versão disponível</b><span>Atualizar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how wrap" id="como" aria-labelledby="h-como">
+    <div class="how-head">
+      <div><div class="eyebrow">Como funciona</div><h2 class="h2" id="h-como">Quatro etapas, entregas <em>visíveis.</em></h2></div>
+      <p class="lede">Decisões tomadas junto com você e nada construído no escuro.</p>
+    </div>
+    <div class="cards">
+      <article class="card sobe">
+        <div class="ill"><div class="il-chat"><span>Preciso parar de controlar as aulas no caderno.</span><span class="eu">Quem marca, você ou os alunos?</span><span>Os alunos, pelo celular.</span></div></div>
+        <h3><small>01</small>Escuta</h3><p>Uma conversa objetiva sobre a rotina, o problema e o resultado esperado.</p>
+      </article>
+      <article class="card sobe">
+        <div class="ill"><div class="il-proto"><div class="tel"><i class="g"></i><i></i><i style="width:70%"></i><i></i><i style="width:55%"></i></div><span class="cmt">mais espaço aqui</span></div></div>
+        <h3><small>02</small>Protótipo</h3><p>Telas para tocar e comentar antes da construção completa.</p>
+      </article>
+      <article class="card sobe">
+        <div class="ill"><div class="il-build"><div><b>Telas<span>100%</span></b><i style="--w:100%"></i></div><div><b>Login e dados<span>80%</span></b><i style="--w:80%"></i></div><div><b>Instalar no celular<span>60%</span></b><i style="--w:60%"></i></div></div></div>
+        <h3><small>03</small>Construção</h3><p>A ferramenta funcionando no celular e no computador, com login e dados protegidos.</p>
+      </article>
+      <article class="card sobe">
+        <div class="ill"><div class="il-evo" id="evo"><span>v1.0</span><span>v1.1</span><span>v1.2</span><span>v1.3</span></div></div>
+        <h3><small>04</small>Evolução</h3><p>Melhorias chegam como atualização, sem perder o que já foi feito.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="ways wrap" aria-labelledby="h-ways">
+    <div class="ways-grid">
+      <div class="ways-vis" aria-hidden="true">
+        <div class="wv on" data-wv="0">
+          <div class="mini-form"><div class="eyebrow"><b>Nos conte sua ideia</b></div><div class="tx" id="typeTx"></div><div class="bt"><span>Continuar</span></div></div>
+        </div>
+        <div class="wv" data-wv="1">
+          <div class="base" id="base"></div>
+        </div>
+        <div class="wv" data-wv="2">
+          <div class="evo">
+            <div class="sheet"><div><span>Cliente</span><span>Aula</span><span>Pago</span></div><div><span>Ana</span><span>ter 18h</span><span>sim</span></div><div><span>Bruno</span><span>qua 7h</span><span>não</span></div><div><span>Carla</span><span>sex 19h</span><span>sim</span></div><div><span>Davi</span><span>sáb 9h</span><span>—</span></div></div>
+            <div class="seta"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div>
+            <div class="ph"><div class="ph-top"><span>Aulas</span><i></i></div><div class="ph-hero"><small>Hoje</small><b>3 aulas</b></div><div class="ph-list"><span>Ana · 18h</span><span>Bruno · pendente</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="ways-list">
+        <div class="eyebrow" id="h-ways">Três formas de começar</div>
+        <div class="way on" data-way="0"><h3>Descrever</h3><p>Conte a ideia em poucas perguntas. A gente devolve um caminho claro, com escopo e prazo.</p></div>
+        <div class="way" data-way="1"><h3>Adaptar</h3><p>Parta de uma solução que já funciona, como catálogo com propostas, CRM ou finanças, e ajuste ao seu negócio.</p></div>
+        <div class="way" data-way="2"><h3>Evoluir</h3><p>Traga a planilha, o caderno ou o app que não dá mais conta. O que já existe vira a base da nova ferramenta.</p></div>
+        <div style="margin-top:28px"><a class="btn btn-primary magnet" href="#ideia">Começar agora<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="proj wrap" id="projetos" aria-labelledby="h-proj">
+    <div class="proj-panel">
+      <div class="proj-head">
+        <div><div class="eyebrow">Projetos em uso real</div><h2 class="h2" id="h-proj">Cada projeto resolve um problema <em>específico.</em></h2></div>
+        <div class="car-nav"><button type="button" id="carPrev" aria-label="Projetos anteriores"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3 5 8l5 5"/></svg></button><button type="button" id="carNext" aria-label="Próximos projetos"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></button></div>
+      </div>
+      <div class="car" id="car" data-cursor="Arraste"></div>
+    </div>
+  </section>
+
+  <section class="duo wrap" aria-label="Garantias">
+    <a class="dc sobe" href="#ideia" data-cursor="Contar minha ideia">
+      <h3>No celular e no <em>computador.</em></h3>
+      <p>Instala na tela inicial como qualquer app e avisa quando algo precisa da sua atenção.</p>
+      <span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+      <div class="art"><div class="dev lap"><img src="../img/projetos/cm_d_Regras.webp" alt="" loading="lazy"></div><div class="dev tel"><img src="../img/projetos/grana_dashboard.webp" alt="" loading="lazy"></div></div>
+    </a>
+    <a class="dc sobe" href="#ideia" data-cursor="Contar minha ideia">
+      <h3>Seus dados, <em>protegidos.</em></h3>
+      <p>Login individual, regras de acesso no próprio banco de dados e cópia de segurança. Cada pessoa vê só o que é dela.</p>
+      <span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+      <div class="art"><div class="cadeado"><span class="anel"></span><span class="anel b"></span><span class="nucleo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="3"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></svg></span><span class="tag" style="left:8%;top:18%">login</span><span class="tag" style="right:6%;top:30%">acesso por pessoa</span><span class="tag" style="left:14%;bottom:12%">cópia diária</span></div></div>
+    </a>
+  </section>
+
+  <section class="typo wrap" aria-labelledby="h-typo">
+    <div class="typo-grid">
+      <div><div class="eyebrow">Onde uma ferramenta própria faz diferença</div><h2 class="h2" id="h-typo">Alguma parece <em>familiar?</em></h2><p class="lede">Passe o cursor ou toque em cada área para ver a pergunta que costuma dar início a um projeto.</p></div>
+      <ul class="tl-list" id="tlList"></ul>
+    </div>
+  </section>
+
+  <section class="ask" id="ideia" aria-labelledby="h-ask">
+    <svg class="rings" id="rings" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="98"/><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="62"/><circle cx="100" cy="100" r="44"/><circle cx="100" cy="100" r="26"/><circle cx="100" cy="100" r="8"/></svg>
+    <div class="wrap">
+      <div class="ask-head" id="askHead">
+        <div class="eyebrow" style="margin-bottom:22px"><b>Nos conte sua ideia</b> · cerca de 5 minutos</div>
+        <h2 id="h-ask" class="reveal">Antes de investir tempo e recursos, vamos fazer as perguntas que nos mostram a <em>essência</em> da sua ideia e transformam sua intenção em <span class="u">resultado.</span></h2>
+        <div class="ask-line" id="askLine"></div>
+      </div>
+
+      <form class="form" id="form" novalidate>
+        <div class="progress" aria-live="polite">
+          <span class="rail-txt" id="railTxt">0 de 9 respondidas</span>
+          <span class="rail-bar"><i id="railBar"></i></span>
+        </div>
+
+        <div class="qs">
+          <!-- 1 -->
+          <div class="qrow">
+            <div class="q" data-q="ideia" data-req>
+              <div class="q-top"><span class="qn">1</span><div>
+                <label class="qt" for="f-ideia">Primeiro descreva sua ideia de forma geral. Só o mais importante que vem à sua mente.</label>
+                <p class="qh">Uma ou duas frases já bastam. O esquema ao lado mostra o que ajuda mais.</p>
+              </div></div>
+              <div class="qbody">
+                <textarea class="inp big" id="f-ideia" name="ideia" maxlength="1200" placeholder="Ex.: Um app para meus alunos marcarem aulas, que me avisa quem está com a mensalidade atrasada."></textarea>
+                <div class="count"><span id="c-ideia">0</span>/1200</div>
+                <div class="err">Escreva pelo menos uma frase sobre a ideia.</div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 280" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: sua ideia ligada a para quem, o que faz e resultado esperado">
+                <path class="p" pathLength="1" d="M220 140 C170 140 150 60 100 60" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M220 140 C160 140 150 140 96 140" stroke="#7A4466" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M220 140 C170 140 150 220 100 220" stroke="#2566A8" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M262 140 C300 140 310 140 330 140" stroke="#16213A" stroke-width="1.2" stroke-dasharray="3 5"/>
+                <rect x="178" y="118" width="84" height="44" rx="22" fill="#16213A"/>
+                <text x="220" y="145" text-anchor="middle" class="t-light">Sua ideia</text>
+                <g class="n">
+                  <rect x="6" y="40" width="124" height="40" rx="12" fill="#FBF8F3" stroke="#E0703A"/>
+                  <text x="68" y="57" text-anchor="middle" class="t-mono">PARA QUEM</text><text x="68" y="72" text-anchor="middle">alunos da academia</text>
+                  <rect x="6" y="120" width="124" height="40" rx="12" fill="#FBF8F3" stroke="#7A4466"/>
+                  <text x="68" y="137" text-anchor="middle" class="t-mono">O QUE FAZ</text><text x="68" y="152" text-anchor="middle">marca aulas e cobra</text>
+                  <rect x="6" y="200" width="124" height="40" rx="12" fill="#FBF8F3" stroke="#2566A8"/>
+                  <text x="68" y="217" text-anchor="middle" class="t-mono">RESULTADO</text><text x="68" y="232" text-anchor="middle">menos tempo cobrando</text>
+                  <rect x="332" y="112" width="96" height="56" rx="14" fill="#7CC4F0" fill-opacity=".35"/>
+                  <text x="380" y="136" text-anchor="middle" class="t-strong">escopo claro</text><text x="380" y="153" text-anchor="middle">em 1 conversa</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 2 -->
+          <div class="qrow">
+            <div class="q" data-q="nome" data-req>
+              <div class="q-top"><span class="qn">2</span><div>
+                <label class="qt" for="f-nome">Como podemos te chamar?</label>
+              </div></div>
+              <div class="qbody">
+                <input class="inp" id="f-nome" name="nome" autocomplete="name" maxlength="80" placeholder="Seu nome">
+                <div class="err">Informe seu nome para personalizarmos o atendimento.</div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 200" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: o nome de quem vai conversar leva a um atendimento personalizado">
+                <circle class="p" pathLength="1" cx="70" cy="100" r="38" stroke="#16213A" stroke-width="1.3"/>
+                <circle class="p" pathLength="1" cx="70" cy="88" r="11" stroke="#16213A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M50 120c6-12 34-12 40 0" stroke="#16213A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M112 100 H200" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M192 94l8 6-8 6" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M214 64h196a14 14 0 0 1 14 14v36a14 14 0 0 1-14 14H262l-18 16v-16h-30a14 14 0 0 1-14-14V78a14 14 0 0 1 14-14Z" stroke="#2566A8" stroke-width="1.3"/>
+                <g class="n">
+                  <text x="70" y="160" text-anchor="middle" class="t-mono">COMO PREFERE</text>
+                  <text x="70" y="175" text-anchor="middle">ser chamado(a)</text>
+                  <text x="228" y="92" class="t-strong">“Oi, Joana! Li a sua ideia</text>
+                  <text x="228" y="110">e já separei algumas perguntas.”</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 3 -->
+          <div class="qrow">
+            <div class="q" data-q="whats" data-req>
+              <div class="q-top"><span class="qn">3</span><div>
+                <label class="qt" for="f-whats" id="qt-whats">Qual WhatsApp usamos para continuar a conversa?</label>
+                <p class="qh">Usado apenas para falar sobre este projeto.</p>
+              </div></div>
+              <div class="qbody">
+                <input class="inp" id="f-whats" name="whats" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(11) 9 0000-0000">
+                <div class="err">Confira o número com DDD, como (11) 9 9999-9999.</div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 210" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: número com DDD leva a uma conversa direta com quem constrói">
+                <rect class="p" pathLength="1" x="30" y="20" width="96" height="170" rx="18" stroke="#16213A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M66 32h24" stroke="#16213A" stroke-width="1.3"/>
+                <g class="n">
+                  <rect x="150" y="62" width="58" height="34" rx="10" fill="#E0703A" fill-opacity=".16" stroke="#E0703A"/>
+                  <text x="179" y="84" text-anchor="middle" class="t-strong">(11)</text>
+                  <rect x="214" y="62" width="120" height="34" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".5"/>
+                  <text x="274" y="84" text-anchor="middle" class="t-strong">9 9999-9999</text>
+                  <text x="179" y="116" text-anchor="middle" class="t-mono">DDD</text>
+                  <text x="274" y="116" text-anchor="middle" class="t-mono">NÚMERO COM 9</text>
+                  <rect x="228" y="140" width="190" height="44" rx="14" fill="#7CC4F0" fill-opacity=".35"/>
+                  <text x="323" y="159" text-anchor="middle" class="t-strong">conversa direta</text>
+                  <text x="323" y="175" text-anchor="middle">com quem constrói</text>
+                </g>
+                <path class="p" pathLength="1" d="M126 79 H146" stroke="#E0703A" stroke-width="1.3"/>
+                <path class="p" pathLength="1" d="M274 120 V136" stroke="#2566A8" stroke-width="1.3"/>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 4 -->
+          <div class="qrow">
+            <div class="q" data-q="para">
+              <div class="q-top"><span class="qn">4</span><div>
+                <span class="qt" id="qt-para">É para uso pessoal ou para um negócio?</span>
+              </div></div>
+              <div class="qbody">
+                <div class="chips" role="radiogroup" aria-labelledby="qt-para">
+                  <label class="chip"><input type="radio" name="para" value="Para mim (uso pessoal)"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Pessoal</label>
+                  <label class="chip"><input type="radio" name="para" value="Para minha empresa"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Minha empresa</label>
+                  <label class="chip"><input type="radio" name="para" value="Para um projeto ou coletivo"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Projeto ou coletivo</label>
+                  <label class="chip"><input type="radio" name="para" value="Para presentear alguém"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Presente</label>
+                </div>
+                <div class="sub-q" id="subMarca">
+                  <label for="f-marca">Nome da marca <span class="opt">se houver</span></label>
+                  <input class="inp" id="f-marca" name="marca" maxlength="80" placeholder="Empresa, marca ou projeto">
+                </div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 230" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: se for empresa, o nome da marca leva cores e logo para dentro do app">
+                <path class="p" pathLength="1" d="M70 115 C120 115 120 40 170 40M70 115 C120 115 120 90 170 90M70 115 C120 115 120 140 170 140M70 115 C120 115 120 190 170 190" stroke="#16213A" stroke-opacity=".55" stroke-width="1.2"/>
+                <path class="p" pathLength="1" d="M258 90 H300" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M300 90 C330 90 330 60 360 60" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M300 90 C330 90 330 120 360 120" stroke="#2566A8" stroke-width="1.4"/>
+                <g class="n">
+                  <circle cx="52" cy="115" r="22" fill="#16213A"/><text x="52" y="119" text-anchor="middle" class="t-light">você</text>
+                  <rect x="170" y="26" width="88" height="28" rx="14" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="214" y="44" text-anchor="middle">pessoal</text>
+                  <rect x="170" y="76" width="88" height="28" rx="14" fill="#E0703A"/><text x="214" y="94" text-anchor="middle" style="fill:#1C0D05;font-weight:500">empresa</text>
+                  <rect x="170" y="126" width="88" height="28" rx="14" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="214" y="144" text-anchor="middle">projeto</text>
+                  <rect x="170" y="176" width="88" height="28" rx="14" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="214" y="194" text-anchor="middle">presente</text>
+                  <rect x="360" y="46" width="72" height="28" rx="10" fill="#FBF8F3" stroke="#E0703A"/><text x="396" y="64" text-anchor="middle">sua marca</text>
+                  <rect x="360" y="106" width="72" height="28" rx="10" fill="#7CC4F0" fill-opacity=".35"/><text x="396" y="124" text-anchor="middle">cores e logo</text>
+                  <text x="396" y="158" text-anchor="middle" class="t-mono">NO APP</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 5 -->
+          <div class="qrow">
+            <div class="q" data-q="tipo">
+              <div class="q-top"><span class="qn">5</span><div>
+                <span class="qt" id="qt-tipo">Qual formato você imagina?</span>
+                <p class="qh">Pode marcar mais de um. “Ainda não sei” também ajuda.</p>
+              </div></div>
+              <div class="qbody">
+                <div class="chips" role="group" aria-labelledby="qt-tipo">
+                  <label class="chip"><input type="checkbox" name="tipo" value="App de celular"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>App de celular</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Sistema ou painel de gestão"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Sistema ou painel</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Site ou catálogo"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Site ou catálogo</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Jogo"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Jogo</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Documento ou planilha inteligente"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Documento inteligente</label>
+                  <label class="chip"><input type="checkbox" name="tipo" value="Ainda não sei"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Ainda não sei</label>
+                </div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 250" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: uma mesma base de dados alimenta app, painel, site, jogo e documento">
+                <path class="p" pathLength="1" d="M220 125 L70 50M220 125 L370 50M220 125 L60 185M220 125 L380 185M220 125 L220 222" stroke="#16213A" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 5"/>
+                <circle cx="220" cy="125" r="40" fill="#16213A"/>
+                <text x="220" y="122" text-anchor="middle" class="t-light">mesma</text><text x="220" y="137" text-anchor="middle" class="t-light">base</text>
+                <g class="n" stroke-width="1.3">
+                  <rect x="56" y="28" width="28" height="44" rx="6" fill="#FBF8F3" stroke="#E0703A"/><path d="M66 34h8" stroke="#E0703A"/>
+                  <text x="70" y="88" text-anchor="middle">app</text>
+                  <rect x="344" y="30" width="52" height="36" rx="5" fill="#FBF8F3" stroke="#2566A8"/><path d="M350 58l8-8 7 5 10-12 15 9" stroke="#2566A8"/>
+                  <text x="370" y="82" text-anchor="middle">painel</text>
+                  <rect x="36" y="168" width="48" height="34" rx="5" fill="#FBF8F3" stroke="#7A4466"/><path d="M36 176h48" stroke="#7A4466"/>
+                  <text x="60" y="218" text-anchor="middle">site</text>
+                  <rect x="362" y="166" width="24" height="34" rx="4" fill="#FBF8F3" stroke="#E0703A" transform="rotate(-10 374 183)"/><rect x="378" y="166" width="24" height="34" rx="4" fill="#FBF8F3" stroke="#2566A8" transform="rotate(8 390 183)"/>
+                  <text x="382" y="218" text-anchor="middle">jogo</text>
+                  <path d="M206 208h20l8 8v24h-28Z" fill="#FBF8F3" stroke="#16213A"/><path d="M211 224h16M211 231h12" stroke="#16213A"/>
+                  <text x="258" y="232">documento</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 6 -->
+          <div class="qrow">
+            <div class="q" data-q="dor">
+              <div class="q-top"><span class="qn">6</span><div>
+                <label class="qt" for="f-dor" id="qt-dor">Qual problema essa ferramenta precisa resolver?</label>
+                <p class="qh">Seja concreto: o que acontece, com que frequência e quanto tempo ou dinheiro isso custa.</p>
+              </div></div>
+              <div class="qbody">
+                <textarea class="inp" id="f-dor" name="dor" maxlength="800" placeholder="Hoje eu perco tempo com…"></textarea>
+                <div class="ex" data-for="f-dor"><button type="button">Hoje eu perco tempo com…</button><button type="button">Toda semana eu preciso…</button><button type="button">Eu dependo de alguém para…</button></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 220" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: caderno, WhatsApp e planilha convergem numa dor concreta, que vira requisito da ferramenta">
+                <path class="p" pathLength="1" d="M92 40 C140 40 140 110 180 110M92 110 H180M92 180 C140 180 140 110 180 110" stroke="#16213A" stroke-opacity=".45" stroke-width="1.2"/>
+                <path class="p" pathLength="1" d="M318 110 H352" stroke="#E0703A" stroke-width="1.4"/>
+                <path class="p" pathLength="1" d="M346 104l7 6-7 6" stroke="#E0703A" stroke-width="1.4"/>
+                <g class="n">
+                  <rect x="12" y="24" width="80" height="32" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="52" y="44" text-anchor="middle">caderno</text>
+                  <rect x="12" y="94" width="80" height="32" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="52" y="114" text-anchor="middle">WhatsApp</text>
+                  <rect x="12" y="164" width="80" height="32" rx="10" fill="#FBF8F3" stroke="#16213A" stroke-opacity=".3"/><text x="52" y="184" text-anchor="middle">planilha</text>
+                  <rect x="180" y="72" width="138" height="76" rx="14" fill="#E0703A" fill-opacity=".14" stroke="#E0703A"/>
+                  <text x="249" y="94" text-anchor="middle" class="t-mono">DOR CONCRETA</text>
+                  <text x="249" y="113" text-anchor="middle" class="t-strong">3 h por semana</text>
+                  <text x="249" y="130" text-anchor="middle">repassando pedidos</text>
+                  <rect x="356" y="84" width="76" height="52" rx="14" fill="#16213A"/>
+                  <text x="394" y="106" text-anchor="middle" class="t-light">vira</text><text x="394" y="122" text-anchor="middle" class="t-light">requisito</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 7 -->
+          <div class="qrow">
+            <div class="q" data-q="desejo">
+              <div class="q-top"><span class="qn">7</span><div>
+                <label class="qt" for="f-desejo">O que ela precisa fazer por você no primeiro dia de uso?</label>
+                <p class="qh">Liste as funções essenciais. Se admira algum app, pode citar.</p>
+              </div></div>
+              <div class="qbody">
+                <textarea class="inp" id="f-desejo" name="desejo" maxlength="800" placeholder="Ela me mostra…, me avisa quando…, gera…"></textarea>
+                <div class="ex" data-for="f-desejo"><button type="button">Ela me mostra…</button><button type="button">Ela me avisa quando…</button><button type="button">Ela gera automaticamente…</button><button type="button">Parecido com o app…</button></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 240" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Mapa mental: primeiro dia de uso com as funções mostra, avisa, automatiza e compartilha">
+                <path class="p" pathLength="1" d="M220 120 C180 120 170 50 130 50M220 120 C180 120 170 190 130 190M220 120 C260 120 270 50 310 50M220 120 C260 120 270 190 310 190" stroke="#16213A" stroke-opacity=".5" stroke-width="1.2"/>
+                <circle cx="220" cy="120" r="38" fill="#16213A"/>
+                <text x="220" y="116" text-anchor="middle" class="t-light">primeiro</text><text x="220" y="131" text-anchor="middle" class="t-light">dia</text>
+                <g class="n">
+                  <rect x="14" y="30" width="116" height="40" rx="12" fill="#FBF8F3" stroke="#E0703A"/><text x="72" y="47" text-anchor="middle" class="t-mono">MOSTRA</text><text x="72" y="62" text-anchor="middle">saldo do mês</text>
+                  <rect x="14" y="170" width="116" height="40" rx="12" fill="#FBF8F3" stroke="#7A4466"/><text x="72" y="187" text-anchor="middle" class="t-mono">AVISA</text><text x="72" y="202" text-anchor="middle">contas a vencer</text>
+                  <rect x="310" y="30" width="116" height="40" rx="12" fill="#FBF8F3" stroke="#2566A8"/><text x="368" y="47" text-anchor="middle" class="t-mono">AUTOMATIZA</text><text x="368" y="62" text-anchor="middle">proposta em PDF</text>
+                  <rect x="310" y="170" width="116" height="40" rx="12" fill="#7CC4F0" fill-opacity=".35"/><text x="368" y="187" text-anchor="middle" class="t-mono">COMPARTILHA</text><text x="368" y="202" text-anchor="middle">com a equipe</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 8 -->
+          <div class="qrow">
+            <div class="q" data-q="uso">
+              <div class="q-top"><span class="qn">8</span><div>
+                <span class="qt">Quem vai usar, e em qual dispositivo?</span>
+              </div></div>
+              <div class="qbody row2">
+                <div><div class="lbl" id="lb-quem">Quem usa</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-quem">
+                    <label class="chip"><input type="radio" name="quem" value="Só eu"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Só eu</label>
+                    <label class="chip"><input type="radio" name="quem" value="Eu e mais alguém"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Eu e mais alguém</label>
+                    <label class="chip"><input type="radio" name="quem" value="Minha equipe"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Minha equipe</label>
+                    <label class="chip"><input type="radio" name="quem" value="Meus clientes ou alunos"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Clientes ou alunos</label>
+                  </div></div>
+                <div><div class="lbl" id="lb-onde">Onde usa</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-onde">
+                    <label class="chip"><input type="radio" name="onde" value="No celular"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Celular</label>
+                    <label class="chip"><input type="radio" name="onde" value="No computador"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Computador</label>
+                    <label class="chip"><input type="radio" name="onde" value="Nos dois"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Nos dois</label>
+                  </div></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 230" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema: quem usa e com qual nível de acesso, ligado a celular e computador">
+                <path class="p" pathLength="1" d="M110 45 C200 45 220 75 300 75M110 115 C200 115 220 75 300 75M110 115 C200 115 220 165 300 165M110 185 C200 185 220 165 300 165" stroke="#16213A" stroke-opacity=".45" stroke-width="1.2"/>
+                <g class="n">
+                  <rect x="14" y="28" width="96" height="34" rx="17" fill="#16213A"/><text x="62" y="49" text-anchor="middle" class="t-light">você</text>
+                  <rect x="14" y="98" width="96" height="34" rx="17" fill="#FBF8F3" stroke="#7A4466"/><text x="62" y="119" text-anchor="middle">equipe</text>
+                  <rect x="14" y="168" width="96" height="34" rx="17" fill="#FBF8F3" stroke="#2566A8"/><text x="62" y="189" text-anchor="middle">clientes</text>
+                  <text x="160" y="36" class="t-mono">ADMIN</text><text x="160" y="106" class="t-mono">OPERAÇÃO</text><text x="160" y="206" class="t-mono">CONSULTA</text>
+                  <rect x="300" y="52" width="120" height="46" rx="12" fill="#FBF8F3" stroke="#E0703A"/><text x="360" y="80" text-anchor="middle" class="t-strong">computador</text>
+                  <rect x="300" y="142" width="120" height="46" rx="12" fill="#7CC4F0" fill-opacity=".35"/><text x="360" y="170" text-anchor="middle" class="t-strong">celular</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- 9 -->
+          <div class="qrow">
+            <div class="q" data-q="tempo">
+              <div class="q-top"><span class="qn">9</span><div>
+                <span class="qt">Prazo e investimento de referência</span>
+                <p class="qh">Serve para desenharmos algo viável. O orçamento definitivo vem depois da conversa.</p>
+              </div></div>
+              <div class="qbody row2">
+                <div><div class="lbl" id="lb-prazo">Quando quer começar a usar</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-prazo">
+                    <label class="chip"><input type="radio" name="prazo" value="O quanto antes"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>O quanto antes</label>
+                    <label class="chip"><input type="radio" name="prazo" value="Em 1 a 2 meses"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Em 1 a 2 meses</label>
+                    <label class="chip"><input type="radio" name="prazo" value="Sem pressa"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Sem pressa</label>
+                  </div></div>
+                <div><div class="lbl" id="lb-inv">Quanto pensa em investir</div>
+                  <div class="chips" role="radiogroup" aria-labelledby="lb-inv">
+                    <label class="chip"><input type="radio" name="invest" value="Ainda não sei"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Ainda não sei</label>
+                    <label class="chip"><input type="radio" name="invest" value="Até R$ 1.500"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Até R$ 1.500</label>
+                    <label class="chip"><input type="radio" name="invest" value="R$ 1.500 a R$ 5.000"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>R$ 1.500 a 5.000</label>
+                    <label class="chip"><input type="radio" name="invest" value="Acima de R$ 5.000"><span class="ck"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 5.2 4.2 7.4 8 3"/></svg></span>Acima de R$ 5.000</label>
+                  </div></div>
+              </div>
+            </div>
+            <figure class="ideal">
+              <figcaption>Resposta ideal</figcaption>
+              <svg class="diag" viewBox="0 0 440 200" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Linha do tempo: conversa, protótipo, versão 1 e evolução, com investimento distribuído por etapa">
+                <path class="p" pathLength="1" d="M40 70 H400" stroke="url(#gline)" stroke-width="2"/>
+                <defs><linearGradient id="gline" gradientUnits="userSpaceOnUse" x1="40" y1="0" x2="400" y2="0"><stop offset="0" stop-color="#E0703A"/><stop offset=".5" stop-color="#7A4466"/><stop offset="1" stop-color="#2566A8"/></linearGradient></defs>
+                <g class="n">
+                  <circle cx="50" cy="70" r="9" fill="#E0703A"/><circle cx="163" cy="70" r="9" fill="#FBF8F3" stroke="#7A4466" stroke-width="1.6"/><circle cx="277" cy="70" r="9" fill="#FBF8F3" stroke="#7A4466" stroke-width="1.6"/><circle cx="390" cy="70" r="9" fill="#2566A8"/>
+                  <text x="50" y="44" text-anchor="middle" class="t-strong">conversa</text>
+                  <text x="163" y="44" text-anchor="middle" class="t-strong">protótipo</text>
+                  <text x="277" y="44" text-anchor="middle" class="t-strong">versão 1</text>
+                  <text x="390" y="44" text-anchor="middle" class="t-strong">evolução</text>
+                  <text x="30" y="124" class="t-mono">INVESTIMENTO POR ETAPA</text>
+                  <rect x="30" y="136" width="60" height="20" rx="6" fill="#E0703A" fill-opacity=".25"/>
+                  <rect x="94" y="136" width="120" height="20" rx="6" fill="#7A4466" fill-opacity=".22"/>
+                  <rect x="218" y="136" width="130" height="20" rx="6" fill="#2566A8" fill-opacity=".22"/>
+                  <rect x="352" y="136" width="58" height="20" rx="6" fill="#7CC4F0" fill-opacity=".45"/>
+                  <text x="30" y="180">Você decide a cada entrega, sem pacote fechado.</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+        </div>
+
+        <div class="send-row" id="sendRow">
+          <button class="btn btn-primary magnet" type="submit" id="sendBtn">Enviar minha ideia<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></button>
+          <p>No próximo passo você envia tudo pelo WhatsApp, já escrito.</p>
+        </div>
+
+        <div class="done-card" id="done" tabindex="-1" aria-live="polite">
+          <div class="eyebrow" style="margin-bottom:14px"><b>Ideia registrada</b> · último passo</div>
+          <h3 id="doneTitle">Pronto. Sua ideia está <em>registrada</em>.</h3>
+          <p class="dsub">Envie pelo WhatsApp para darmos o próximo passo. A mensagem já está escrita; é só conferir e enviar.</p>
+          <p class="crm-st" id="crmSt" aria-live="polite"></p>
+          <div class="msg-label"><span>Sua mensagem</span><button type="button" class="linkish" id="copyMsg">Copiar</button></div>
+          <div class="msg" id="msg"></div>
+          <label class="toggle"><input type="checkbox" id="incAll" checked><span class="tr"></span>Incluir também as outras respostas</label>
+          <div class="done-actions">
+            <a class="btn btn-wa magnet" id="waBtn" href="https://wa.me/5511990234473" target="_blank" rel="noopener">Enviar no WhatsApp<span class="dot"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg></span></a>
+            <span class="num">+55 11 99023-4473</span>
+            <button type="button" class="linkish" id="editBack">Voltar e ajustar respostas</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot" aria-label="Rodapé">
+  <div class="wrap">
+    <div class="foot-cols">
+      <div><h4>Rumëyart Criação</h4><p>Apps, sistemas, jogos e documentos feitos sob medida, para pessoas e negócios.</p></div>
+      <div><h4>Navegar</h4><a href="#fazemos">O que fazemos</a><a href="#como">Como funciona</a><a href="#projetos">Projetos</a><a href="#ideia">Contar minha ideia</a></div>
+      <div><h4>Projetos em uso</h4><div id="footApps"></div></div>
+      <div><h4>Conversar</h4><a href="https://wa.me/5511990234473" target="_blank" rel="noopener">WhatsApp</a><p style="margin-top:6px;font-family:var(--f-mono);font-size:12.5px">+55 11 99023-4473</p></div>
+    </div>
+    <div class="wordmark" id="wordmark" aria-hidden="true">
+      <span class="ly irid l3"></span><span class="ly irid l2"></span><span class="ly irid l1"></span>
+      <img src="../img/rumeyart-marca.png" alt="" width="700" height="223" loading="lazy">
+    </div>
+    <div class="foot-legal"><span>© <span id="ano">2026</span> Rumëyart Criação</span><span>Feito sob medida, como tudo por aqui.</span></div>
+  </div>
+</footer>
+
+<div class="float-q" id="floatQ" aria-hidden="true"><small id="floatQt"></small><span id="floatQx"></span></div>
+
+<div class="gal" id="gal" role="dialog" aria-modal="true" aria-labelledby="galName">
+  <div class="gal-panel" id="galPanel">
+    <button class="gal-btn gal-close" id="galClose" aria-label="Fechar galeria"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    <div class="gal-stage" id="galStage">
+      <div class="frame" id="galFrame"><img id="galImg" alt=""></div>
+      <div class="gal-nav">
+        <button class="gal-btn" id="galPrev" aria-label="Tela anterior"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3 5 8l5 5"/></svg></button>
+        <button class="gal-btn" id="galNext" aria-label="Próxima tela"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></button>
+      </div>
+    </div>
+    <div class="gal-info">
+      <div class="glogo" id="galLogo"></div>
+      <div>
+        <div class="eyebrow" id="galTag"></div>
+        <h3 id="galName" style="margin-top:10px"></h3>
+      </div>
+      <p class="gsum" id="galSum"></p>
+      <ul class="strengths" id="galList"></ul>
+      <div class="gal-foot">
+        <span class="gal-count" id="galCount"></span>
+        <a class="btn btn-primary btn-sm" href="#ideia" id="galCta">Quero algo assim<span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+</body>
+</html>
