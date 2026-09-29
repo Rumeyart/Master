@@ -59,13 +59,48 @@ Para liberar outra pessoa: CRM → Configurações → Quem acessa o CRM.
   cada PDF arquivado por versão, travamento depois de aprovada, duplicar.
 - **Contratos** — modelos com variáveis que se preenchem a partir do cliente e da proposta,
   PDF guardado, marcar como assinado.
+- **Administrativo** — tarefas administrativas e o **cofre** de acessos dos projetos (nome do projeto, plataforma,
+  login, senha e data da última alteração), protegido por um PIN de 4 dígitos.
+- **Listas abertas** — os campos de lista aceitam digitação: filtra enquanto você digita e, se o item não existir,
+  oferece "＋ Adicionar" (categorias e subcategorias do financeiro, fornecedores, recursos, serviços, contas,
+  clientes, áreas de tarefa, tipo e origem do cliente).
+- **Próximos passos com mensagem pronta** — cada passo da lista "O que fazer" (responder pedido, enviar proposta,
+  cobrar entrada, pedir depoimento…) tem um texto para o cliente, já com o nome dele e em linguagem neutra.
+  Aparece ao criar a tarefa ("Ver e enviar") e nos botões de WhatsApp. Edite em Configurações → Próximos passos.
+- **Notificações** — sino no topo com o número de coisas novas. A tela mostra as novidades do CRM (bem curtas, por data)
+  e a atividade: tudo o que foi criado, alterado ou apagado, com quem fez e quando. O que acontece junto vira uma linha só
+  (um pedido do site com cliente, projeto e tarefa; uma importação de extrato). O que você mesmo faz aparece, mas não conta no sino.
+  A cada entrega nova, acrescente os itens no topo de `site/crm/js/novidades.js`.
+- **Social e anúncios** (menu Divulgação) — a divulgação da marca num lugar só, em seis abas:
+  - **Visão geral** do mês: plano de ação, posts publicados e engajamento médio, investimento, conversas e custo por conversa,
+    ideias que chegaram pelo site, pilares do mês contra a meta, melhores posts e últimos aprendizados.
+  - **Plano de ação** em etapas (base da marca, perfil, Canva, conteúdo, Meta Ads, rotina), cada ação com passo a passo, dica,
+    prazo e anotações; marcar como feita atualiza o progresso.
+  - **Calendário** de posts (grade do mês + lista): formato, pilar, público, status, link do Canva, roteiro, legenda e resultado
+    (alcance, salvamentos, compartilhamentos…). Engajamento calculado; filtro "Sem resultado" para não esquecer de anotar.
+  - **Campanhas** do Meta Ads com hipótese, público, texto do anúncio e resultados por período. Custo por conversa, CTR, CPM,
+    conversa → orçamento e retorno são calculados. Links do site com rastreio (bio e cada campanha).
+  - **Aprendizados**: diário de testes (hipótese → o que foi feito → resultado → decisão) ligado ao post ou à campanha.
+  - **Marca**: frase-guia, promessa, tom de voz, públicos, pilares com peso, cores, formatos, hashtags e textos-base, tudo editável e com botão copiar.
+  - Exporta posts e aprendizados em CSV; entra na cópia completa em JSON.
+- **Origem das ideias do site** — o site guarda os parâmetros `utm_` do link por onde a pessoa entrou e manda junto com a ideia.
+  O pedido aparece com "via anúncio · captacao" ou "via bio do Instagram", e cada campanha mostra as ideias que trouxe.
 - **Serviços** — catálogo que alimenta as propostas.
 - **Compras** — lista de compras, recursos com cotações (melhor preço), fornecedores.
 - **Financeiro** — visão do mês, lançamentos (receita, despesa, transferência, pagamento de fatura),
   parcelado e mensal, contas e cartões com saldo e fatura, categorias com subcategorias,
   importação de extrato OFX/CSV sem duplicar. Fechar um projeto lança as parcelas a receber.
-- **Configurações** — tema e zoom, notificações, numeração, textos padrão, dados da empresa,
+- **Configurações** — tema e zoom, notificações, numeração, textos padrão, textos dos próximos passos, dados da empresa,
   acesso, exportação em CSV e cópia completa em JSON.
+
+## Cofre
+- Na primeira vez que abrir **Administrativo → Cofre**, o CRM pede para criar o PIN (digitado duas vezes).
+- Logins e senhas ficam cifrados no banco (pgcrypto) com uma chave que o app nunca lê; só as funções do cofre,
+  com uma sessão aberta pelo PIN, conseguem decifrar.
+- 5 PINs errados seguidos bloqueiam o cofre por 15 minutos. Ele tranca sozinho após 5 minutos parado,
+  ao trocar de tela ou ao minimizar o app.
+- Esqueceu o PIN? No Supabase → SQL Editor rode `update rumeyart_cofre_config set pin_hash = null;` e crie um novo
+  no CRM. Os acessos guardados continuam lá.
 
 ## Backup automático (opcional)
 No GitHub: **Add file → Create new file**, nome `.github/workflows/backup.yml`, e cole o conteúdo de

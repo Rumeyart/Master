@@ -1,9 +1,10 @@
 // Configurações: aparência, notificações, numeração, textos padrão, empresa, acesso e exportação
 import {sb, q, T, config, tudo} from './db.js';
-import {esc, aviso, traduzErro, csv, baixar, autoAltura, listaBonita, confirmar, TIPOS, ORIGENS, rot, etapaNome, statusNome} from './util.js';
+import {esc, aviso, traduzErro, janela, csv, baixar, autoAltura, listaBonita, confirmar, TIPOS, ORIGENS, rot, etapaNome, statusNome} from './util.js';
 import {OPCOES_ZOOM, TEMAS, zoomAtual, temaAtual, mudarZoom, mudarTema} from './aparencia.js';
 import {ICONES} from './icones.js';
 import * as pwa from './pwa.js';
+import {PASSOS_PADRAO, VARIAVEIS_PASSOS, carregarPassos, preencherPasso} from './passos.js';
 import {estado, recarregar} from './app.js';
 
 let CFG_ABA = 'aparencia';
@@ -14,7 +15,7 @@ export async function render(el){
   const inp = (id, rotulo, v, extra = '') => `<div class="campo"><label class="rot" for="${id}">${rotulo}</label><input type="text" id="${id}" value="${esc(v)}" ${extra}></div>`;
   el.innerHTML = `
     <div class="cab"><h1>Configurações</h1></div>
-    <nav class="abas" id="abasCfg">${[['aparencia', 'Aparência e app'], ['propostas', 'Propostas'], ['empresa', 'Empresa'], ['acesso', 'Acesso e dados']].map(([k, n]) => `<a href="#" data-aba="${k}">${n}</a>`).join('')}</nav>
+    <nav class="abas" id="abasCfg">${[['aparencia', 'Aparência e app'], ['passos', 'Próximos passos'], ['propostas', 'Propostas'], ['empresa', 'Empresa'], ['acesso', 'Acesso e dados']].map(([k, n]) => `<a href="#" data-aba="${k}">${n}</a>`).join('')}</nav>
     <div class="col-unica">
     <section data-sec="aparencia">
       <div class="card limpo"><h3>Aparência <span class="muted" style="font-family:var(--f-corpo);font-size:13px;">vale só para este aparelho</span></h3>
@@ -25,6 +26,13 @@ export async function render(el){
         <div class="muted" style="font-size:12.5px;margin-top:.45rem;">O zoom com os dedos fica travado para a tela não escorregar; use estas opções para aumentar ou diminuir tudo.</div>
       </div>
       <div class="card limpo"><h3>Notificações e app</h3><div id="notifCorpo" class="muted">Verificando…</div></div>
+    </section>
+    <section data-sec="passos">
+      <div class="card limpo"><h3>Editar textos dos próximos passos</h3>
+        <p class="muted" style="margin:-.4rem 0 .9rem;font-size:13.5px;">Cada passo da lista "O que fazer" tem uma mensagem pronta para o cliente, com o nome dele no lugar certo. Toque em um passo para editar o texto.</p>
+        <div class="passos-lista" id="passosLista"></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:1rem;"><button class="btn linha peq" id="passoNovo">＋ Novo passo</button><button class="link" id="passosRestaurar" style="font-size:13px;margin-left:auto;">Restaurar textos originais</button></div>
+      </div>
     </section>
     <section data-sec="propostas">
         <div class="card limpo"><h3>Numeração</h3>
@@ -71,6 +79,7 @@ export async function render(el){
   el.querySelectorAll('#abasCfg a').forEach(a => a.onclick = e => { e.preventDefault(); mostrarAba(a.dataset.aba); });
   mostrarAba(abaCfg);
   ['c_etp', 'c_pag', 'c_inc', 'c_nao'].forEach(i => listaBonita(el.querySelector('#' + i)));
+  montarPassos(el.querySelector('[data-sec="passos"]'), cfg);
   el.querySelectorAll('textarea').forEach(t => t.addEventListener('input', () => autoAltura(t)));
   requestAnimationFrame(() => el.querySelectorAll('textarea').forEach(autoAltura));
   el.querySelectorAll('#temas [data-tema]').forEach(b => b.onclick = () => { mudarTema(b.dataset.tema); el.querySelectorAll('#temas [data-tema]').forEach(x => x.classList.toggle('on', x === b)); });
@@ -140,7 +149,7 @@ async function exportar(tipo){
   const nome = n => `rumeyart-${n}-${hoje}`;
   if(tipo === 'tudo'){
     const dados = {exportado_em: new Date().toISOString()};
-    for(const n of ['clientes', 'oport', 'pedidos', 'propostas', 'pdfs', 'hist', 'tarefas', 'servicos', 'config', 'fornecedores', 'recursos', 'precos', 'compras', 'modelos', 'contratos', 'contas', 'cartoes', 'categorias', 'lanc']) dados[T[n]] = await tudo(T[n]);
+    for(const n of ['clientes', 'oport', 'pedidos', 'propostas', 'pdfs', 'hist', 'tarefas', 'servicos', 'config', 'fornecedores', 'recursos', 'precos', 'compras', 'modelos', 'contratos', 'contas', 'cartoes', 'categorias', 'lanc', 'mktMarca', 'mktAcoes', 'mktPosts', 'mktCampanhas', 'mktResultados', 'mktAprendizados']) dados[T[n]] = await tudo(T[n]);
     baixar(nome('crm-completo') + '.json', JSON.stringify(dados, null, 1), 'application/json'); aviso('Cópia completa baixada.'); return;
   }
   const cli = '*, cliente:rumeyart_clientes(nome)';
@@ -152,4 +161,47 @@ async function exportar(tipo){
   if(tipo === 'tarefas') baixar(nome('tarefas') + '.csv', csv(await tudo(T.tarefas, cli), [[r => r.cliente?.nome, 'Cliente'], ['titulo', 'Tarefa'], ['area', 'Área'], ['vence_em', 'Para'], [r => r.concluida ? 'sim' : 'não', 'Concluída'], ['concluida_em', 'Concluída em'], ['criado_por', 'Criada por']]));
   if(tipo === 'historico') baixar(nome('historico') + '.csv', csv(await tudo(T.hist, cli), [['criado_em', 'Data'], [r => r.cliente?.nome, 'Cliente'], ['tipo', 'Tipo'], ['texto', 'Registro'], ['autor', 'Autor']]));
   aviso('Arquivo baixado.');
+}
+
+// ---------- textos dos próximos passos: lista compacta + edição em janela ----------
+function montarPassos(sec, cfg){
+  let lista = (Array.isArray(cfg.passos) && cfg.passos.length ? cfg.passos : PASSOS_PADRAO).map(p => ({...p}));
+  const box = sec.querySelector('#passosLista');
+  const exemplo = t => preencherPasso(t, {nome: 'Alex', projeto: ''});
+  const desenhar = () => {
+    box.innerHTML = lista.map((p, i) => `<button type="button" class="passo-l" data-i="${i}">
+        <span class="tx"><b>${esc(p.titulo)}</b><span>${esc(exemplo(p.texto) || 'Sem texto')}</span></span>
+        <span class="ed">${ICONES.editar}</span></button>`).join('');
+    box.querySelectorAll('[data-i]').forEach(b => b.onclick = () => editar(+b.dataset.i));
+  };
+  const salvar = async () => { await q.altera(T.config, 1, {passos: lista}); cfg.passos = lista; await config(true); await carregarPassos(true); desenhar(); };
+  const chips = `<div class="vars-passo">${VARIAVEIS_PASSOS.map(([v, d]) => `<button type="button" class="pill" data-var="${v}" title="${d}">${v}</button>`).join('')}<span class="muted">toque para inserir · [entre colchetes] você completa na hora de enviar</span></div>`;
+  const ligarChips = ctx => { const ta = ctx.el.querySelector('textarea'); ctx.el.querySelectorAll('[data-var]').forEach(b => b.onclick = () => { const i = ta.selectionStart ?? ta.value.length; ta.setRangeText(b.dataset.var, i, ta.selectionEnd ?? i, 'end'); ta.focus(); }); requestAnimationFrame(() => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 4 + 'px'; }); ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 4 + 'px'; }); };
+  const editar = async i => {
+    const p = lista[i], orig = PASSOS_PADRAO.find(x => x.titulo === p.titulo);
+    const r = await janela({titulo: p.titulo, corpo: `<textarea id="ps_tx" aria-label="Texto do passo" style="min-height:150px;line-height:1.55;">${esc(p.texto)}</textarea>${chips}`,
+      aoAbrir: ligarChips,
+      botoes: [{texto: 'Remover', classe: 'perigo esq', valor: 'remover'},
+        ...(orig && orig.texto !== p.texto ? [{texto: 'Texto original', classe: 'fantasma', acao: ctx => { ctx.el.querySelector('#ps_tx').value = orig.texto; ctx.el.querySelector('#ps_tx').dispatchEvent(new Event('input')); return false; }}] : []),
+        {texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: ctx => ({texto: ctx.el.querySelector('#ps_tx').value.trim()})}]});
+    if(!r) return;
+    if(r === 'remover' && !(await confirmar('Remover passo', `"${esc(p.titulo)}" sai da lista de próximos passos. As tarefas que já existem continuam iguais.`, 'Remover', 'perigo'))) return;
+    try{
+      if(r === 'remover') lista.splice(i, 1); else lista[i] = {...p, texto: r.texto};
+      await salvar(); aviso(r === 'remover' ? 'Passo removido.' : 'Texto salvo.');
+    }catch(e){ aviso(traduzErro(e)); }
+  };
+  sec.querySelector('#passoNovo').onclick = async () => {
+    const r = await janela({titulo: 'Novo passo', corpo: `<div class="campo"><label class="rot" for="ps_ti">Nome do passo</label><input type="text" id="ps_ti" placeholder="Ex.: Enviar acesso ao sistema"></div>
+      <div class="campo"><label class="rot" for="ps_tx">Mensagem para o cliente</label><textarea id="ps_tx" style="min-height:130px;line-height:1.55;">Oi, {nome}! </textarea></div>${chips}`,
+      aoAbrir: ligarChips,
+      botoes: [{texto: 'Cancelar'}, {texto: 'Adicionar', classe: 'prim', acao: ctx => { const titulo = ctx.valor('#ps_ti'); if(titulo.length < 2){ ctx.erro('Dê um nome ao passo.'); return false; } if(lista.some(x => x.titulo.toLowerCase() === titulo.toLowerCase())){ ctx.erro('Já existe um passo com esse nome.'); return false; } return {titulo, texto: ctx.el.querySelector('#ps_tx').value.trim()}; }}]});
+    if(!r) return;
+    try{ lista.push(r); await salvar(); aviso('Passo adicionado.'); }catch(e){ aviso(traduzErro(e)); }
+  };
+  sec.querySelector('#passosRestaurar').onclick = async () => {
+    if(!(await confirmar('Restaurar textos originais', 'A lista volta a ter os passos e textos que vieram com o CRM. Passos novos que você criou saem da lista.', 'Restaurar', 'perigo'))) return;
+    try{ lista = PASSOS_PADRAO.map(p => ({...p})); await salvar(); aviso('Textos restaurados.'); }catch(e){ aviso(traduzErro(e)); }
+  };
+  desenhar();
 }

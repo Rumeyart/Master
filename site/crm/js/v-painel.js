@@ -2,6 +2,7 @@
 import {q, T, config, tarefasAbertas} from './db.js';
 import {esc, brlC, brlCurto, quando, diaChave, hojeChave, whatsLink, haQuanto, aviso, traduzErro, primeiroNome, mesChave, mesLimites, rot, AREAS} from './util.js';
 import {ICONES} from './icones.js';
+import {mensagemDoPasso} from './passos.js';
 import {ir, recarregar, atualizarContador} from './app.js';
 
 export async function render(el){
@@ -56,7 +57,7 @@ export async function render(el){
       <section class="card bloco-p"><h3>${agendaTit}<a class="ver dir" href="#/tarefas">Ver todas</a></h3>
         ${listaTarefas(lista, hoje) || '<div class="vazio">Nenhuma tarefa marcada. Quando você agenda um retorno, ele aparece aqui.</div>'}</section>
       <section class="card bloco-p"><h3>Ideias do site<a class="ver dir" href="#/pedidos">Caixa de entrada</a></h3>
-        ${pedidos.length ? pedidos.slice(0, 4).map(p => { const w = whatsLink(p.whatsapp, `Olá, ${primeiroNome(p.nome)}! Aqui é ${eu || 'a Rumëyart'}, da Rumëyart. Recebi a sua ideia e quero entender melhor. Podemos conversar esta semana?`);
+        ${pedidos.length ? pedidos.slice(0, 4).map(p => { const w = whatsLink(p.whatsapp, mensagemDoPasso('Responder pedido do site', {nome: p.nome}) || `Olá, ${primeiroNome(p.nome)}! Aqui é ${eu || 'a equipe'}, da Rumëyart. Recebi a sua ideia e quero entender melhor. Podemos conversar esta semana?`);
           return `<div class="ideia-l ${p.status}"><a class="tx" href="#/pedidos?id=${p.id}"><b>${esc(p.nome)}${p.status === 'novo' ? ' <span class="tag novo">Novo</span>' : ''}</b><span>${esc(String(p.ideia).slice(0, 88))}${String(p.ideia).length > 88 ? '…' : ''}</span></a>
             ${w ? `<a class="wpp" href="${w}" target="_blank" rel="noopener" data-resp="${p.id}" title="Responder no WhatsApp" aria-label="Responder ${esc(p.nome)} no WhatsApp">${ICONES.whats}</a>` : ''}</div>`; }).join('')
           : '<div class="vazio">Quando alguém preencher o formulário do site, a ideia aparece aqui.</div>'}</section>
@@ -89,12 +90,13 @@ export function listaTarefas(ts, hoje = hojeChave()){
   if(!ts.length) return '';
   return ts.map(t => {
     const k = diaChave(t.vence_em), est = k < hoje ? 'atras' : k === hoje ? 'hoje' : '';
-    const w = whatsLink(t.cliente?.whatsapp);
+    const msg = mensagemDoPasso(t.titulo, {nome: t.cliente?.nome, projeto: t.oportunidade?.titulo});
+    const w = whatsLink(t.cliente?.whatsapp, msg || undefined);
     return `<div class="tarefa ${est}" data-t="${t.id}"><input type="checkbox" aria-label="Concluir: ${esc(t.titulo)}">
       <div class="tx"><b>${esc(t.titulo)}</b>
         <span class="meta"><span class="pill quando">${quando(t.vence_em)}</span><span class="area-tag ${t.area}">${rot(AREAS, t.area)}</span>${t.cliente?.nome ? `<a href="#/cliente/${t.cliente_id}">${esc(t.cliente.nome)}</a>` : ''}${t.oportunidade ? `<span class="op">${esc(t.oportunidade.titulo)}</span>` : ''}</span></div>
       <button type="button" class="btn fantasma peq" data-editar-t="${t.id}" aria-label="Editar tarefa" title="Editar" style="min-height:34px;width:34px;padding:0;"><span class="ic">${ICONES.editar}</span></button>
-      ${w ? `<a class="wpp" target="_blank" rel="noopener" href="${w}" title="Abrir WhatsApp" aria-label="Abrir WhatsApp">${ICONES.whats}</a>` : ''}</div>`;
+      ${w ? `<a class="wpp" target="_blank" rel="noopener" href="${w}" title="${msg ? 'Abrir WhatsApp com a mensagem pronta' : 'Abrir WhatsApp'}" aria-label="Abrir WhatsApp">${ICONES.whats}</a>` : ''}</div>`;
   }).join('');
 }
 export function ligarTarefas(el, aoConcluir){

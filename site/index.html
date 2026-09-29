@@ -1289,10 +1289,21 @@ form.addEventListener('submit',e=>{
 const CRM_URL='https://uotxnchfvrgpxwimmefd.supabase.co/rest/v1/rpc/rumeyart_novo_pedido';
 const CRM_KEY='sb_publishable_wopZQEqU4NERsq2wqCJMXQ_hg53O5VA';
 let ultimoEnvio='';
+/* de onde veio a visita (link da bio, anúncio…): guardado na primeira página vista e enviado junto com a ideia */
+const ORIGEM=(()=>{
+  const ch=['utm_source','utm_medium','utm_campaign','utm_content'];
+  try{
+    const u=new URLSearchParams(location.search), o={};
+    ch.forEach(k=>{const v=(u.get(k)||'').trim().slice(0,80); if(v) o[k.slice(4)]=v;});
+    if(Object.keys(o).length){o.em=new Date().toISOString(); sessionStorage.setItem('rmy-origem',JSON.stringify(o)); return o;}
+    return JSON.parse(sessionStorage.getItem('rmy-origem')||'null');
+  }catch(e){return null;}
+})();
 async function enviarCRM(){
   const st=$('#crmSt');
   const respostas={para:radio('para'),marca:$('#subMarca').classList.contains('show')?fMarca.value.trim():'',tipo:checks('tipo').join(', '),
     dor:F('dor').value.trim(),desejo:F('desejo').value.trim(),quem:radio('quem'),onde:radio('onde'),prazo:radio('prazo'),invest:radio('invest'),whats:fWhats.value.trim()};
+  if(ORIGEM) respostas.origem=ORIGEM;
   const corpo={p_nome:fNome.value.trim().replace(/\s+/g,' '),p_whatsapp:fWhats.value.trim(),p_ideia:fIdeia.value.trim(),p_respostas:respostas};
   const assinatura=JSON.stringify(corpo);
   if(assinatura===ultimoEnvio) return;

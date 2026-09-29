@@ -1,7 +1,8 @@
 // Janelas de cadastro usadas em várias telas
 import {sb, T, q, servicos, config, contas, clientes as listarClientes, limparCache} from './db.js';
-import {$, esc, janela, opcoes, TIPOS, ORIGENS, ETAPAS, AREAS, etapaNome, numInput, brl, paraInputDataHora, deInputDataHora, addDias, hojeChave, centavos} from './util.js';
+import {$, esc, janela, opcoes, TIPOS, ORIGENS, ETAPAS, AREAS, etapaNome, numInput, brl, paraInputDataHora, deInputDataHora, addDias, hojeChave, centavos, aviso, whatsLink} from './util.js';
 import {ICONES} from './icones.js';
+import {passos, acharPasso, preencherPasso} from './passos.js';
 import {dadosPadrao, calc} from './proposta-doc.js';
 
 // ---------- seletor de cliente com busca ----------
@@ -121,7 +122,7 @@ export async function oportunidade({cliente_id, existente}){
 }
 
 function proximoHorario(){ const d = addDias(new Date(), 1); d.setHours(10, 0, 0, 0); return d; }
-function acoesDatalist(){ return `<datalist id="acoesSug"><option value="Responder pedido do site"><option value="Marcar conversa de levantamento"><option value="Enviar protótipo"><option value="Enviar proposta"><option value="Cobrar resposta da proposta"><option value="Enviar contrato"><option value="Cobrar entrada"><option value="Publicar versão 1"><option value="Treinamento com o cliente"><option value="Renovar domínio"></datalist>`; }
+function acoesDatalist(){ return `<datalist id="acoesSug">${passos().map(p => `<option value="${esc(p.titulo)}">`).join('')}</datalist>`; }
 
 // ---------- tarefa (com ou sem cliente) ----------
 export async function tarefa({cliente_id, oportunidade_id, existente, area}){
@@ -132,6 +133,7 @@ export async function tarefa({cliente_id, oportunidade_id, existente, area}){
   const corpo = `${seletor ? seletor.html : ''}
     <div class="campo"><label class="rot" for="t_op">Projeto <small>(opcional)</small></label><select id="t_op"><option value="">—</option></select></div>
     <div class="campo"><label class="rot" for="t_tit">O que fazer *</label><input type="text" id="t_tit" list="acoesSug" value="${esc(t.titulo)}" placeholder="Ex: Enviar protótipo"></div>
+    <div class="dica-msg" id="t_msg" hidden><span class="ic">${ICONES.whats}</span><span>Este passo tem mensagem pronta para o cliente.</span><button type="button" class="link" id="t_ver">Ver e enviar</button></div>
     <div class="grade2">
       <div class="campo"><label class="rot" for="t_area">Área</label><select id="t_area" data-add="texto">${opcoes(AREAS, t.area, areasUs)}</select></div>
       <div class="campo"><label class="rot" for="t_quando">Quando *</label><input type="datetime-local" id="t_quando" value="${paraInputDataHora(t.vence_em || proximoHorario())}"></div>
@@ -148,6 +150,17 @@ export async function tarefa({cliente_id, oportunidade_id, existente, area}){
         if(!oportunidade_id && !t.oportunidade_id && ops.length === 1) sel.value = ops[0].id;
       };
       if(seletor) ligarSeletorCliente(ctx.el, 't_cli', seletor.cs, carregarOps); else carregarOps(cid0);
+      const tit = ctx.el.querySelector('#t_tit'), dica = ctx.el.querySelector('#t_msg');
+      const atualizarDica = () => { const p = acharPasso(tit.value); dica.hidden = !(p && p.texto); };
+      tit.addEventListener('input', atualizarDica); tit.addEventListener('change', atualizarDica); atualizarDica();
+      ctx.el.querySelector('#t_ver').onclick = async () => {
+        const cid = cid0 || (seletor ? ctx.valor('#t_cli') : null);
+        let cli = seletor ? seletor.cs.find(c => c.id === cid) : null;
+        if(!cli && cid && cid !== '__novo') cli = await q.um(T.clientes, cid, 'nome,whatsapp').catch(() => null);
+        const op = ctx.el.querySelector('#t_op').selectedOptions[0];
+        const projeto = op && op.value ? op.textContent.replace(/\s·\s[^·]+$/, '').trim() : '';
+        verMensagem(tit.value, {nome: cli?.nome, whatsapp: cli?.whatsapp, projeto});
+      };
       ctx.el.querySelectorAll('[data-atalho]').forEach(b => b.onclick = () => { const [d, h] = b.dataset.atalho.split(',').map(Number); const x = addDias(new Date(), d); x.setHours(h, 0, 0, 0); ctx.el.querySelector('#t_quando').value = paraInputDataHora(x); });
     },
     botoes: [...(existente ? [{texto: 'Apagar', classe: 'perigo', acao: async () => { await q.apaga(T.tarefas, existente.id); return 'apagada'; }}] : []), {texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: async ctx => {
@@ -167,7 +180,7 @@ export async function notaRapida(cliente_id){
   const seletor = cliente_id ? null : await htmlSeletorCliente('n_cli');
   const corpo = `${seletor ? seletor.html : ''}
     <div class="campo"><label class="rot" for="n_tipo">Tipo</label><select id="n_tipo"><option value="nota">Anotação</option><option value="contato">Contato com o cliente</option></select></div>
-    <div class="campo"><label class="rot" for="n_tx">O que aconteceu</label><textarea id="n_tx" placeholder="Ex: Conversamos por vídeo; ele quer começar pelo módulo de agenda."></textarea></div>`;
+    <div class="campo"><label class="rot" for="n_tx">O que aconteceu</label><textarea id="n_tx" placeholder="Ex: Conversamos por vídeo; a ideia é começar pelo módulo de agenda."></textarea></div>`;
   return janela({titulo: 'Nova anotação', corpo, aoAbrir: ctx => { if(seletor) ligarSeletorCliente(ctx.el, 'n_cli', seletor.cs); },
     botoes: [{texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: async ctx => {
       const cid = cliente_id || ctx.valor('#n_cli'); const texto = ctx.valor('#n_tx');
@@ -268,4 +281,19 @@ export async function moverEtapa(op, etapa){
 export function novaSenha(){
   return janela({titulo: 'Criar nova senha', corpo: `<div class="campo"><label class="rot" for="ns">Nova senha (mínimo 8 caracteres)</label><input type="password" id="ns" autocomplete="new-password"></div>`,
     botoes: [{texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: ctx => { const v = ctx.valor('#ns'); if(v.length < 8){ ctx.erro('Use pelo menos 8 caracteres.'); return false; } return v; }}]});
+}
+
+// ---------- mensagem pronta do próximo passo: revisar, copiar ou abrir no WhatsApp ----------
+export function verMensagem(titulo, {nome, whatsapp, projeto} = {}){
+  const p = acharPasso(titulo);
+  if(!p) return null;
+  const texto = preencherPasso(p.texto, {nome, projeto});
+  return janela({titulo: p.titulo, corpo: `
+    <div class="campo"><label class="rot" for="mp_tx">Mensagem${nome ? ' para ' + esc(nome) : ''} <small>(ajuste antes de enviar, se quiser)</small></label>
+      <textarea id="mp_tx" style="min-height:170px;line-height:1.55;">${esc(texto)}</textarea></div>
+    ${/\[[^\]]+\]/.test(texto) ? '<p class="muted" style="font-size:12.5px;margin:.5rem 0 0;">Troque o que está entre colchetes, como [link] ou [data], antes de enviar.</p>' : ''}
+    ${nome ? '' : '<p class="muted" style="font-size:12.5px;margin:.5rem 0 0;">Escolha o cliente na tarefa para a mensagem sair com o nome.</p>'}`,
+    aoAbrir: ctx => { const t = ctx.el.querySelector('#mp_tx'); requestAnimationFrame(() => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 4 + 'px'; }); },
+    botoes: [{texto: 'Copiar', classe: 'fantasma', acao: async ctx => { try{ await navigator.clipboard.writeText(ctx.el.querySelector('#mp_tx').value); aviso('Mensagem copiada.'); }catch(e){ ctx.erro('Não foi possível copiar neste navegador.'); return false; } }},
+      ...(whatsapp ? [{texto: 'Abrir no WhatsApp', classe: 'verde', acao: ctx => { const w = whatsLink(whatsapp, ctx.el.querySelector('#mp_tx').value); if(w) window.open(w, '_blank', 'noopener'); }}] : [])]});
 }
