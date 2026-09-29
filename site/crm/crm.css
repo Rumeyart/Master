@@ -888,3 +888,13 @@ section[data-sec] > .card:last-child{margin-bottom:0}
 .mk-rolar{overflow-x:auto;max-width:100%}
 h3 .tag{font-family:var(--f-corpo);font-weight:600;letter-spacing:0}
 .mk-det .tabela th,.mk-det .tabela td{padding:.55rem .45rem;letter-spacing:.04em}
+
+/* cofre: botão Usar e o passe flutuante */
+.cofre-ac{display:flex;gap:.35rem;justify-content:flex-end;flex-wrap:wrap}
+.passe{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:120;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;
+  width:min(560px,calc(100vw - 32px));padding:14px 16px;border-radius:18px;background:var(--cartao);border:1px solid var(--linha);box-shadow:var(--sombra-2);animation:aparece .25s var(--ease)}
+.passe-tx{flex:1;min-width:180px;display:flex;flex-direction:column;gap:.1rem;font-size:13.5px}
+.passe-tx span{color:var(--mudo)}
+.passe-ac{display:flex;gap:.4rem;align-items:center}
+.passe-s{font:500 11px var(--f-mono);opacity:.7;min-width:2ch}
+@media (max-width:900px){.passe{bottom:calc(92px + env(safe-area-inset-bottom,0px))}}

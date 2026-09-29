@@ -44,6 +44,14 @@ O site fica em `https://SEU-DOMINIO/` e o CRM em `https://SEU-DOMINIO/crm/`
 Supabase → **Authentication → URL Configuration → Redirect URLs** → adicione
 `https://SEU-DOMINIO/crm/` para o link de "Esqueci minha senha" voltar para o CRM.
 
+## Site (versão 2, no ar desde 29/09/2026)
+- `site/index.html` + `site/novo.css` + `site/novo.js`: topo com fios em WebGL em volta do símbolo, rolagem suave (Lenis via jsDelivr),
+  carregamento com o símbolo, cursor com rótulo, faixa de projetos, frase com imagens, três histórias fixas, cartões do processo,
+  "três formas de começar", carrossel de projetos com galeria, lista de áreas e rodapé com a marca em brilho.
+- O formulário "Nos conte sua ideia" continua enviando para o CRM.
+- `site/index-antigo.html`: a versão anterior, guardada fora do Google. `/novo` redireciona para `/`.
+- **Publicar sempre a pasta `site` inteira** (ou o `rumeyart-site.zip`): subir só uma pasta tira o resto do ar.
+
 ## Entrar no CRM
 Use o e-mail `23caiocaio05@gmail.com` com a mesma senha que você já usa nos outros apps
 desse projeto Supabase. Se não lembrar, clique em **Esqueci minha senha** na tela de entrada.
@@ -71,20 +79,6 @@ Para liberar outra pessoa: CRM → Configurações → Quem acessa o CRM.
   e a atividade: tudo o que foi criado, alterado ou apagado, com quem fez e quando. O que acontece junto vira uma linha só
   (um pedido do site com cliente, projeto e tarefa; uma importação de extrato). O que você mesmo faz aparece, mas não conta no sino.
   A cada entrega nova, acrescente os itens no topo de `site/crm/js/novidades.js`.
-- **Social e anúncios** (menu Divulgação) — a divulgação da marca num lugar só, em seis abas:
-  - **Visão geral** do mês: plano de ação, posts publicados e engajamento médio, investimento, conversas e custo por conversa,
-    ideias que chegaram pelo site, pilares do mês contra a meta, melhores posts e últimos aprendizados.
-  - **Plano de ação** em etapas (base da marca, perfil, Canva, conteúdo, Meta Ads, rotina), cada ação com passo a passo, dica,
-    prazo e anotações; marcar como feita atualiza o progresso.
-  - **Calendário** de posts (grade do mês + lista): formato, pilar, público, status, link do Canva, roteiro, legenda e resultado
-    (alcance, salvamentos, compartilhamentos…). Engajamento calculado; filtro "Sem resultado" para não esquecer de anotar.
-  - **Campanhas** do Meta Ads com hipótese, público, texto do anúncio e resultados por período. Custo por conversa, CTR, CPM,
-    conversa → orçamento e retorno são calculados. Links do site com rastreio (bio e cada campanha).
-  - **Aprendizados**: diário de testes (hipótese → o que foi feito → resultado → decisão) ligado ao post ou à campanha.
-  - **Marca**: frase-guia, promessa, tom de voz, públicos, pilares com peso, cores, formatos, hashtags e textos-base, tudo editável e com botão copiar.
-  - Exporta posts e aprendizados em CSV; entra na cópia completa em JSON.
-- **Origem das ideias do site** — o site guarda os parâmetros `utm_` do link por onde a pessoa entrou e manda junto com a ideia.
-  O pedido aparece com "via anúncio · captacao" ou "via bio do Instagram", e cada campanha mostra as ideias que trouxe.
 - **Serviços** — catálogo que alimenta as propostas.
 - **Compras** — lista de compras, recursos com cotações (melhor preço), fornecedores.
 - **Financeiro** — visão do mês, lançamentos (receita, despesa, transferência, pagamento de fatura),

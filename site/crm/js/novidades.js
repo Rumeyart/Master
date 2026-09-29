@@ -1,5 +1,10 @@
 // Novidades do CRM (a mais nova primeiro). A cada entrega, acrescente um bloco no topo com itens curtos.
 export const NOVIDADES = [
+  {id: '2026-09-29', data: '2026-09-29', itens: [
+    'Cofre: botão Usar abre o site com o login copiado',
+    'Senha pronta para copiar por 60 segundos',
+    'O cofre não tranca enquanto você cadastra ou edita um acesso'
+  ]},
   {id: '2026-09-28', data: '2026-09-28', itens: [
     'Novo menu Social e anúncios',
     'Plano de ação de divulgação com passo a passo',

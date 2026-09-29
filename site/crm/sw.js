@@ -1,6 +1,6 @@
 // Service worker do CRM Rumëyart: permite instalar o app, abre sem internet (última versão vista)
 // e mostra as notificações enviadas pelo servidor.
-const CACHE = 'rumeyart-crm-v7';
+const CACHE = 'rumeyart-crm-v9';
 const BASE = ['./', './crm.css', './documento.css', './manifest.webmanifest', './icones/icone-192.png', './icones/badge-96.png'];
 
 self.addEventListener('install', ev => {

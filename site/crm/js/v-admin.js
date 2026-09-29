@@ -9,8 +9,11 @@ import {ir, recarregar} from './app.js';
 // sessão do cofre: só na memória desta aba, nunca gravada no aparelho
 let token = null, timer = null;
 const MINUTOS = 5;
-function tocar(){ clearTimeout(timer); timer = setTimeout(() => trancar(true), MINUTOS * 60000); }
+// enquanto a janela de novo acesso (ou edição) está aberta, o cofre não tranca: o trancamento fica para depois que ela fechar
+let editando = 0, trancarDepois = false;
+function tocar(){ clearTimeout(timer); if(editando) return; timer = setTimeout(() => trancar(true), MINUTOS * 60000); }
 async function trancar(auto){
+  if(editando){ trancarDepois = true; return; }
   clearTimeout(timer);
   const t = token; token = null;
   if(t) sb.rpc('rumeyart_cofre_fechar', {p_token: t}).then(() => {}, () => {});
@@ -22,7 +25,7 @@ document.addEventListener('visibilitychange', () => { if(document.visibilityStat
 
 async function rpc(nome, args){
   const {data, error} = await sb.rpc(nome, args);
-  if(error){ if(/cofre_fechado/.test(error.message)){ token = null; const b = document.getElementById('cofreBox'); if(b) telaPin(b); throw new Error('O cofre foi trancado. Digite o PIN de novo.'); } throw error; }
+  if(error){ if(/cofre_fechado/.test(error.message)){ token = null; const b = document.getElementById('cofreBox'); if(b && !editando) telaPin(b); const e = new Error('O cofre foi trancado. Digite o PIN de novo.'); e.fechado = true; throw e; } throw error; }
   if(args?.p_token) tocar();
   return data;
 }
@@ -120,8 +123,68 @@ async function telaPin(box){
   ligar(box);
 }
 
+// PIN pedido por cima da janela de edição (a sessão do servidor expirou, por exemplo com o computador em repouso)
+function pedirPin(){
+  return janela({titulo: 'Confirme o PIN', corpo: `<p class="muted" style="margin-top:0;">O cofre precisa do PIN para salvar. O que você digitou continua na janela.</p><div id="pinRapido"></div><div class="msg" id="pinRapidoMsg" role="alert"></div>`,
+    aoAbrir: ctx => {
+      const {html, ligar} = caixasPin(async (pin, limpar) => {
+        const r = await sb.rpc('rumeyart_cofre_abrir', {p_pin: pin}).then(({data, error}) => error ? {ok: false, erro: traduzErro(error)} : data);
+        if(r?.ok){ token = r.token; ctx.fechar(true); return; }
+        ctx.el.querySelector('#pinRapidoMsg').textContent = r?.erro === 'pin_incorreto' ? `PIN incorreto. ${r.restam === 1 ? 'Resta 1 tentativa' : `Restam ${r.restam} tentativas`}.` : r?.erro === 'bloqueado' ? 'Muitas tentativas. Tente de novo em 15 minutos.' : (r?.erro || 'Não foi possível abrir.');
+        limpar();
+      });
+      const alvo = ctx.el.querySelector('#pinRapido'); alvo.innerHTML = html; ligar(alvo);
+    }});
+}
+
 // ---------------- cofre: lista ----------------
 const PLATAFORMAS = ['Supabase', 'GitHub', 'Cloudflare', 'Google', 'Gmail', 'Vercel', 'Netlify', 'Registro.br', 'Hostinger', 'Instagram', 'Meta Business', 'Mercado Pago', 'Stripe', 'Apple', 'Play Console', 'OpenAI', 'Anthropic'];
+
+// endereço de entrada de cada plataforma conhecida; se a Plataforma já for um link, ele é usado direto
+const ENTRADAS = {supabase: 'https://supabase.com/dashboard', github: 'https://github.com/login', cloudflare: 'https://dash.cloudflare.com/login',
+  google: 'https://accounts.google.com', gmail: 'https://mail.google.com', vercel: 'https://vercel.com/login', netlify: 'https://app.netlify.com',
+  'registro.br': 'https://registro.br', hostinger: 'https://hpanel.hostinger.com', instagram: 'https://www.instagram.com/accounts/login/',
+  'meta business': 'https://business.facebook.com', 'mercado pago': 'https://www.mercadopago.com.br', stripe: 'https://dashboard.stripe.com/login',
+  apple: 'https://appleid.apple.com', 'play console': 'https://play.google.com/console', openai: 'https://platform.openai.com/login', anthropic: 'https://console.anthropic.com'};
+export function linkDaPlataforma(p){
+  const t = String(p || '').trim(); if(!t) return null;
+  if(/^https?:\/\//i.test(t)) return t;
+  if(ENTRADAS[t.toLowerCase()]) return ENTRADAS[t.toLowerCase()];
+  if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(t)) return 'https://' + t;
+  return null;
+}
+const nomePlataforma = p => { const t = String(p || '').trim(); if(!/^https?:\/\//i.test(t)) return t; try{ const u = new URL(t); return u.hostname.replace(/^www\./, '') + (u.pathname.length > 1 ? u.pathname.replace(/\/$/, '') : ''); }catch(e){ return t; } };
+
+// "Usar": copia o login, abre a plataforma numa aba nova e deixa a senha pronta para copiar por 60 segundos.
+// O navegador não deixa uma página preencher o formulário de outro site; por isso o preenchimento é por colar.
+let passe = null;
+function fecharPasse(){ if(!passe) return; clearInterval(passe.t); passe.el.remove(); passe = null; }
+async function usarAcesso(i){
+  const url = linkDaPlataforma(i.plataforma);
+  if(!url){ aviso('Cadastre o link de entrada no campo Plataforma (ex.: https://…).'); return; }
+  let senha = '';
+  try{
+    if(i.login) await navigator.clipboard.writeText(i.login).catch(() => {});
+    if(i.tem_senha) senha = await rpc('rumeyart_cofre_revelar', {p_token: token, p_id: i.id}) || '';
+  }catch(e){ aviso(traduzErro(e)); return; }
+  window.open(url, '_blank', 'noopener');
+  fecharPasse();
+  const el = document.createElement('div');
+  el.className = 'passe'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Acesso em uso');
+  el.innerHTML = `<div class="passe-tx"><b>${esc(i.projeto)}</b><span>${i.login ? 'Login copiado. Cole no site e volte aqui para a senha.' : 'Site aberto.'}</span></div>
+    <div class="passe-ac">${i.login ? `<button type="button" class="btn fantasma peq" data-p="login">Copiar login</button>` : ''}${senha ? `<button type="button" class="btn prim peq" data-p="senha">Copiar senha <span class="passe-s">60</span></button>` : ''}
+    <button type="button" class="mini" data-p="x" aria-label="Fechar">×</button></div>`;
+  document.body.appendChild(el);
+  let resta = 60;
+  passe = {el, t: setInterval(() => { resta--; const c = el.querySelector('.passe-s'); if(c) c.textContent = resta; if(resta <= 0){ senha = ''; fecharPasse(); } }, 1000)};
+  el.addEventListener('click', async e => {
+    const b = e.target.closest('[data-p]'); if(!b) return;
+    if(b.dataset.p === 'x'){ senha = ''; fecharPasse(); return; }
+    try{ await navigator.clipboard.writeText(b.dataset.p === 'senha' ? senha : i.login); aviso(b.dataset.p === 'senha' ? 'Senha copiada. Cole no site.' : 'Login copiado.'); }
+    catch(err){ aviso('Não foi possível copiar neste navegador.'); }
+    if(b.dataset.p === 'senha'){ senha = ''; setTimeout(fecharPasse, 1500); }
+  });
+}
 
 async function listaCofre(box){
   let itens;
@@ -136,11 +199,11 @@ async function listaCofre(box){
     ${itens.length ? `<div class="card limpo cofre-lista"><table class="tabela"><thead><tr><th>Projeto</th><th>Plataforma</th><th>Login</th><th>Senha</th><th>Alterado em</th><th></th></tr></thead><tbody>
       ${itens.map(i => `<tr data-id="${i.id}" data-busca="${esc(`${i.projeto} ${i.plataforma || ''} ${i.login || ''}`.toLowerCase())}">
         <td data-l=""><div class="nm">${esc(i.projeto)}</div></td>
-        <td data-l="Plataforma">${i.plataforma ? `<span class="pill">${esc(i.plataforma)}</span>` : '<span class="muted">—</span>'}</td>
+        <td data-l="Plataforma">${i.plataforma ? `<span class="pill" title="${esc(i.plataforma)}">${esc(nomePlataforma(i.plataforma))}</span>` : '<span class="muted">—</span>'}</td>
         <td data-l="Login">${i.login ? `<span class="segredo"><span class="val">${esc(i.login)}</span><button type="button" class="mini" data-copiar-login="${i.id}" title="Copiar login" aria-label="Copiar login">${ICONES.copiar}</button></span>` : '<span class="muted">—</span>'}</td>
         <td data-l="Senha">${i.tem_senha ? `<span class="segredo"><span class="val senha" data-senha="${i.id}">••••••••</span><button type="button" class="mini" data-ver="${i.id}" title="Mostrar senha" aria-label="Mostrar senha">${ICONES.olho}</button><button type="button" class="mini" data-copiar="${i.id}" title="Copiar senha" aria-label="Copiar senha">${ICONES.copiar}</button></span>` : '<span class="muted">—</span>'}</td>
         <td data-l="Alterado em" class="sm" title="${esc(i.atualizado_por || '')}">${dataBR(i.atualizado_em)}</td>
-        <td data-l=""><button type="button" class="btn fantasma peq" data-editar="${i.id}">Editar</button></td></tr>`).join('')}
+        <td data-l=""><div class="cofre-ac">${linkDaPlataforma(i.plataforma) ? `<button type="button" class="btn azul peq" data-usar="${i.id}" title="Abrir ${esc(nomePlataforma(i.plataforma))} com o login copiado">Usar</button>` : ''}<button type="button" class="btn fantasma peq" data-editar="${i.id}">Editar</button></div></td></tr>`).join('')}
     </tbody></table></div>` : `<div class="vazio" style="padding:2.4rem 1rem;">O cofre está vazio. Guarde aqui os acessos de cada projeto: banco de dados, hospedagem, domínio, e-mails.</div>`}
     <p class="muted cofre-rodape">Tranca sozinho em ${MINUTOS} minutos sem uso · <button type="button" class="link" id="cPin">Trocar PIN</button></p>`;
 
@@ -151,6 +214,7 @@ async function listaCofre(box){
   $('#cPin').onclick = () => trocarPin();
   box.querySelectorAll('[data-editar]').forEach(b => b.onclick = async () => { const r = await editar(itens.find(i => i.id === b.dataset.editar), projetos); if(r){ aviso(r === 'apagado' ? 'Acesso apagado.' : 'Acesso atualizado.'); listaCofre(box); } });
   const copiar = async (txt, oque) => { try{ await navigator.clipboard.writeText(txt); aviso(`${oque} copiado.`); }catch(e){ aviso('Não foi possível copiar neste navegador.'); } };
+  box.querySelectorAll('[data-usar]').forEach(b => b.onclick = () => usarAcesso(itens.find(i => i.id === b.dataset.usar)));
   box.querySelectorAll('[data-copiar-login]').forEach(b => b.onclick = () => copiar(itens.find(i => i.id === b.dataset.copiarLogin).login, 'Login'));
   box.querySelectorAll('[data-copiar]').forEach(b => b.onclick = async () => { try{ copiar(await rpc('rumeyart_cofre_revelar', {p_token: token, p_id: b.dataset.copiar}) || '', 'Senha'); }catch(e){ aviso(traduzErro(e)); } });
   box.querySelectorAll('[data-ver]').forEach(b => b.onclick = async () => {
@@ -164,6 +228,13 @@ async function listaCofre(box){
   });
 }
 
+// roda a ação; se o cofre tiver fechado no servidor, pede o PIN por cima e tenta de novo
+async function comPin(fn){
+  if(!token && !(await pedirPin())) throw new Error('Salvamento cancelado: o cofre precisa do PIN.');
+  try{ return await fn(); }
+  catch(e){ if(!e.fechado) throw e; if(!(await pedirPin())) throw new Error('Salvamento cancelado: o cofre precisa do PIN.'); return fn(); }
+}
+
 function gerarSenha(n = 16){
   const c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?';
   const a = crypto.getRandomValues(new Uint32Array(n));
@@ -171,12 +242,24 @@ function gerarSenha(n = 16){
 }
 
 async function editar(item, projetos){
+  editando++; clearTimeout(timer);
+  // mantém a sessão do servidor viva enquanto a janela estiver aberta (ela expira em 10 minutos sem uso)
+  const pulso = setInterval(() => { if(token) sb.rpc('rumeyart_cofre_listar', {p_token: token}).then(() => {}, () => {}); }, 4 * 60000);
+  try{ return await editarJanela(item, projetos); }
+  finally{
+    clearInterval(pulso); editando = Math.max(0, editando - 1);
+    if(!editando){ const fora = !location.hash.startsWith('#/administrativo') || document.visibilityState === 'hidden';
+      if(trancarDepois && fora){ trancarDepois = false; trancar(false); } else { trancarDepois = false; if(token) tocar(); else { const b = document.getElementById('cofreBox'); if(b) telaPin(b); } } }
+  }
+}
+
+async function editarJanela(item, projetos){
   let ops = [];
   try{ ops = (await q.lista(T.oport, 'titulo', x => x.eq('arquivado', false).limit(200))).map(o => o.titulo); }catch(e){}
   const sugProj = [...new Set([...projetos, 'Rumëyart Criação', ...ops])];
   return janela({titulo: item ? 'Editar acesso' : 'Novo acesso', corpo: `
     <div class="campo"><label class="rot" for="v_proj">Nome do projeto *</label><input type="text" id="v_proj" list="v_projs" value="${esc(item?.projeto)}" maxlength="120" autocomplete="off"><datalist id="v_projs">${sugProj.map(p => `<option value="${esc(p)}">`).join('')}</datalist></div>
-    <div class="campo"><label class="rot" for="v_plat">Plataforma</label><input type="text" id="v_plat" list="v_plats" value="${esc(item?.plataforma)}" placeholder="Ex.: Supabase, GitHub, Cloudflare" autocomplete="off"><datalist id="v_plats">${PLATAFORMAS.map(p => `<option value="${p}">`).join('')}</datalist></div>
+    <div class="campo"><label class="rot" for="v_plat">Plataforma</label><input type="text" id="v_plat" list="v_plats" value="${esc(item?.plataforma)}" placeholder="Link de entrada (https://…) ou nome: Supabase, GitHub…" autocomplete="off"><small class="muted" style="font-size:12px;">Com o link, o botão Usar abre o site já com o login copiado.</small><datalist id="v_plats">${PLATAFORMAS.map(p => `<option value="${p}">`).join('')}</datalist></div>
     <div class="campo"><label class="rot" for="v_login">Login</label><input type="text" id="v_login" value="${esc(item?.login)}" autocomplete="off" spellcheck="false" placeholder="e-mail ou usuário"></div>
     <div class="campo"><label class="rot" for="v_senha">Senha ${item?.tem_senha ? '<small>(deixe em branco para manter a atual)</small>' : ''}</label>
       <div class="senha-campo"><input type="password" id="v_senha" autocomplete="new-password" spellcheck="false">
@@ -188,11 +271,11 @@ async function editar(item, projetos){
       ctx.el.querySelector('#v_ver').onclick = e => { const v = s.type === 'password'; s.type = v ? 'text' : 'password'; e.currentTarget.innerHTML = v ? ICONES.olho_fechado : ICONES.olho; };
       ctx.el.querySelector('#v_gerar').onclick = () => { s.value = gerarSenha(); s.type = 'text'; ctx.el.querySelector('#v_ver').innerHTML = ICONES.olho_fechado; };
     },
-    botoes: [...(item ? [{texto: 'Apagar', classe: 'perigo', acao: async () => { if(!(await confirmar('Apagar acesso', `Apagar o acesso de <b>${esc(item.projeto)}</b>${item.plataforma ? ' · ' + esc(item.plataforma) : ''}? Não dá para desfazer.`, 'Apagar', 'perigo'))) return false; await rpc('rumeyart_cofre_apagar', {p_token: token, p_id: item.id}); return 'apagado'; }}] : []),
+    botoes: [...(item ? [{texto: 'Apagar', classe: 'perigo', acao: async () => { if(!(await confirmar('Apagar acesso', `Apagar o acesso de <b>${esc(item.projeto)}</b>${item.plataforma ? ' · ' + esc(item.plataforma) : ''}? Não dá para desfazer.`, 'Apagar', 'perigo'))) return false; await comPin(() => rpc('rumeyart_cofre_apagar', {p_token: token, p_id: item.id})); return 'apagado'; }}] : []),
       {texto: 'Cancelar'}, {texto: 'Salvar', classe: 'prim', acao: async ctx => {
         const proj = ctx.valor('#v_proj'); if(!proj){ ctx.erro('Informe o nome do projeto.'); return false; }
         const senha = ctx.el.querySelector('#v_senha').value;
-        await rpc('rumeyart_cofre_salvar', {p_token: token, p_id: item?.id || null, p_projeto: proj, p_plataforma: ctx.valor('#v_plat'), p_login: ctx.valor('#v_login'), p_senha: item && !senha ? null : senha});
+        await comPin(() => rpc('rumeyart_cofre_salvar', {p_token: token, p_id: item?.id || null, p_projeto: proj, p_plataforma: ctx.valor('#v_plat'), p_login: ctx.valor('#v_login'), p_senha: item && !senha ? null : senha}));
         return true;
       }}]});
 }

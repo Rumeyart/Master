@@ -1,3 +1,5 @@
 /admin    /crm/  301
 /admin/*  /crm/  301
 /crm      /crm/  301
+/novo    /  301
+/novo/*  /  301
